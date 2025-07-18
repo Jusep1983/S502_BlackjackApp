@@ -19,14 +19,14 @@ Esta versión incluye una estructura modular escalable, preparada para implement
 ---
 
 ## 📁 Estructura Modular
-
+```
 com.jusep1983.blackjack
 ├── config # Configuración general y seguridad
 ├── auth # Login, JWT, roles
 ├── player # Gestión de jugadores
 ├── game # Lógica del juego de blackjack
 ├── shared # Excepciones, respuestas comunes, enums
-
+```
 yaml
 Copiar
 Editar
