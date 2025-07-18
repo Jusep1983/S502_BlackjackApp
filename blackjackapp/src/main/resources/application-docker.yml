@@ -1,0 +1,20 @@
+spring:
+
+  r2dbc:
+    url: ${SPRING_R2DBC_URL}
+    username: ${SPRING_R2DBC_USERNAME}
+    password: ${SPRING_R2DBC_PASSWORD}
+
+  mongodb:
+    uri: ${SPRING_DATA_MONGODB_URI}
+
+server:
+  port: ${PORT:8080}
+
+# DEPLOY
+# index.html:
+# https://s501-blackjack-api.onrender.com/
+
+# swagger:
+# https://s501-blackjack-api.onrender.com/swagger-ui/index.html#/
+# https://s501-blackjack-api.onrender.com/v3/api-docs

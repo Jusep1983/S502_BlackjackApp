@@ -1,0 +1,81 @@
+services:
+  mysql-db:
+    image: mysql:9.2
+    container_name: mysql-blackjack-v2
+    environment:
+      MYSQL_ROOT_PASSWORD: 1707
+      MYSQL_DATABASE: blackjack_app_players
+    ports:
+      - "33306:3306" # Puerto cambiado para evitar conflicto con MySQL local
+    networks:
+      - blackjack-v2-net
+    volumes:
+      - mysql-v2-data:/var/lib/mysql
+      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+
+  mongo-db:
+    image: mongo:7.0
+    container_name: mongo-blackjack-v2
+    ports:
+      - "27018:27017" # Puerto cambiado para evitar conflicto con Mongo local
+    networks:
+      - blackjack-v2-net
+    volumes:
+      - mongo-v2-data:/data/db
+    restart: unless-stopped
+
+  blackjack-api-v2:
+    build: .
+    container_name: blackjack-api-v2
+    ports:
+      - "8081:8080"  # Cambia el puerto para que no choque con la API antigua
+    depends_on:
+      - mongo-blackjack-v2
+      - mysql-blackjack-v2
+    networks:
+      - blackjack-v2-net
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    restart: unless-stopped
+
+volumes:
+  mysql-v2-data:
+  mongo-v2-data:
+
+networks:
+  blackjack-v2-net:
+
+## nueva version
+#    version: '3.8'
+#
+#    services:
+#      mongo-db:
+#        image: mongo:7.0
+#        container_name: mongo-db
+#        ports:
+#          - "27017:27017"
+#        volumes:
+#          - mongo-data:/data/db
+#        networks:
+#          - blackjack-net
+#
+#      blackjack-backend:
+#        build:
+#          context: ./backend
+#          dockerfile: Dockerfile
+#        container_name: blackjack-backend
+#        ports:
+#          - "8080:8080"
+#        environment:
+#          - SPRING_PROFILES_ACTIVE=docker
+#        depends_on:
+#          - mongo-db
+#        networks:
+#          - blackjack-net
+#
+#    volumes:
+#      mongo-data:
+#
+#    networks:
+#      blackjack-net:

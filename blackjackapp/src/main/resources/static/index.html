@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <title>Blackjack Front</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<h1>Blackjack API Front</h1>
+<section>
+    <h2>Crear jugador</h2>
+    <input type="text" id="playerName" placeholder="Nombre" />
+    <button onclick="createPlayer()">Crear</button>
+</section>
+
+<section>
+    <h2>Crear partida</h2>
+    <input type="text" id="gamePlayerName" placeholder="Nombre" />
+    <button onclick="createGame()">Nueva partida</button>
+</section>
+
+<section>
+    <h2>Detalles de partida</h2>
+    <input type="text" id="gameId" placeholder="ID" />
+    <button onclick="getGame()">Ver</button>
+    <div id="gameDetails"></div>
+</section>
+
+<section>
+    <h2>Acciones</h2>
+    <button onclick="hit()">HIT</button>
+    <button onclick="stand()">STAND</button>
+</section>
+
+<section>
+    <h2>Ranking</h2>
+    <button onclick="getRanking()">Ver ranking</button>
+    <ul id="rankingList"></ul>
+</section>
+
+<script src="script.js"></script>
+</body>
+</html>
