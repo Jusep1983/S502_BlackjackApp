@@ -1,10 +1,14 @@
 package com.jusep1983.blackjack.player;
 
+import com.jusep1983.blackjack.player.dto.CreatePlayerDTO;
+import com.jusep1983.blackjack.player.dto.PlayerRankingDTO;
+import com.jusep1983.blackjack.shared.response.MyApiResponse;
+import com.jusep1983.blackjack.shared.response.ResponseBuilder;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +18,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/player")
+@SecurityRequirement(name = "bearerAuth")
 public class PlayerController {
     private final PlayerService playerService;
 
@@ -21,36 +26,28 @@ public class PlayerController {
         this.playerService = playerService;
     }
 
+    @Operation(summary = "Create a new player")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Player created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input"),
+            @ApiResponse(responseCode = "500", description = "Server error")
+    })
     @PostMapping("/new")
-    @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "Create a new player", description = "Creates a new player with initial stats")
-    @ApiResponse(responseCode = "201", description = "Player created successfully",
-            content = @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = Player.class),
-                    examples = @ExampleObject(value = """
-                            {
-                              "id": 1,
-                              "name": "Jose",
-                              "gamesPlayed": 10,
-                              "gamesWon": 5,
-                              "createdAt": "2025-07-05T03:26:09.863Z"
-                            }
-                            """)))
-    @ApiResponse(responseCode = "400", description = "Invalid player data", content = @Content)
-    @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content)
-    public Mono<ResponseEntity<Player>> creatPlayer(@RequestBody Player player) {
-        return playerService.createPlayer(player)
-                .map(savedPlayer -> ResponseEntity.status(HttpStatus.CREATED).body(savedPlayer));
+    @SecurityRequirement(name = "bearerAuth")
+    public Mono<ResponseEntity<MyApiResponse<Player>>> createPlayer(@Valid @RequestBody CreatePlayerDTO dto) {
+        return playerService.createPlayer(dto)
+                .map(player -> ResponseBuilder.created("Player created", player));
     }
 
     @Operation(summary = "Update player by id")
     @ApiResponse(responseCode = "200", description = "Player updated")
     @ApiResponse(responseCode = "404", description = "Player not found")
     @PutMapping("/{id}/updateName")
+    @SecurityRequirement(name = "bearerAuth")
     public Mono<ResponseEntity<Player>> updatePlayerName(
             @PathVariable Long id,
             @RequestBody Player player) {
-        return playerService.updateName(id, player.getName())
+        return playerService.updateName(id, player.getUserName())
                 .map(updatedPlayer -> ResponseEntity.status(HttpStatus.OK)
                         .body(updatedPlayer));
 
@@ -66,11 +63,16 @@ public class PlayerController {
                         .body(player));
     }
 
+    @Operation(summary = "Get public ranking of all players")
+    @ApiResponse(responseCode = "200", description = "Ranking retrieved")
+    @ApiResponse(responseCode = "500", description = "Internal server error")
     @GetMapping("/ranking")
-    public Mono<ResponseEntity<List<PlayerRankingDTO>>> getRanking() {
+    public Mono<ResponseEntity<MyApiResponse<List<PlayerRankingDTO>>>> getRanking() {
         return playerService.getRanking()
                 .collectList()
-                .map(ResponseEntity::ok);
+                .map(ranking -> ResponseEntity.ok(
+                        new MyApiResponse<>(200, "Ranking loaded", ranking)
+                ));
     }
 
 }

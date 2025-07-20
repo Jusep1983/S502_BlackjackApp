@@ -1,5 +1,8 @@
 package com.jusep1983.blackjack.player;
 
+import com.jusep1983.blackjack.player.dto.CreatePlayerDTO;
+import com.jusep1983.blackjack.player.dto.PlayerRankingDTO;
+import com.jusep1983.blackjack.shared.enums.Role;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,25 +28,47 @@ class PlayerControllerTest {
     @InjectMocks
     private PlayerController playerController;
 
+    private Player buildPlayer(Long id, String userName) {
+        return new Player(
+                id,
+                userName,
+                "alias_" + userName,
+                "password123",
+                Role.USER,
+                0, 0, 0, 0,
+                LocalDateTime.now()
+        );
+    }
+
+    private CreatePlayerDTO buildDto() {
+        CreatePlayerDTO dto = new CreatePlayerDTO();
+        dto.setUserName("Jose");
+        dto.setPassword("password123");
+        return dto;
+    }
+
     @Test
     void givenValidPlayer_whenCreatePlayer_thenReturnsCreatedPlayer() {
-        Player input = new Player(null, "Jose", 0, 0, 0, 0, null);
-        Player saved = new Player(1L, "Jose", 0, 0, 0, 0, LocalDateTime.now());
+        //Player input = buildPlayer(null, "Jose");
+        CreatePlayerDTO dto = buildDto();
+        Player saved = buildPlayer(1L, "Jose");
 
-        Mockito.when(playerService.createPlayer(input)).thenReturn(Mono.just(saved));
+        Mockito.when(playerService.createPlayer(dto)).thenReturn(Mono.just(saved));
 
-        StepVerifier.create(playerController.creatPlayer(input))
+        StepVerifier.create(playerController.createPlayer(dto))
                 .assertNext(response -> {
                     assertThat(response.getStatusCode().value()).isEqualTo(201);
                     assertThat(response.getBody()).isNotNull();
-                    assertThat(response.getBody().getName()).isEqualTo("Jose");
+                    assertThat(response.getBody().getData()).isNotNull();
+                    assertThat(response.getBody().getData().getUserName()).isEqualTo("Jose");
+                    assertThat(response.getBody().getMessage()).isEqualTo("Player created");
                 })
                 .verifyComplete();
     }
 
     @Test
     void givenValidIdAndName_whenUpdatePlayerName_thenReturnsUpdatedPlayer() {
-        Player updated = new Player(1L, "New", 0, 0, 0, 0, null);
+        Player updated = buildPlayer(1L, "New");
 
         Mockito.when(playerService.updateName(1L, "New")).thenReturn(Mono.just(updated));
 
@@ -51,14 +76,14 @@ class PlayerControllerTest {
                 .assertNext(response -> {
                     assertThat(response.getStatusCodeValue()).isEqualTo(200);
                     Assertions.assertNotNull(response.getBody());
-                    assertThat(response.getBody().getName()).isEqualTo("New");
+                    assertThat(response.getBody().getUserName()).isEqualTo("New");
                 })
                 .verifyComplete();
     }
 
     @Test
     void givenValidId_whenGetPlayerById_thenReturnsPlayer() {
-        Player player = new Player(1L, "Jose", 0, 0, 0, 0, LocalDateTime.now());
+        Player player = buildPlayer(1L, "Jose");
 
         Mockito.when(playerService.getById(1L)).thenReturn(Mono.just(player));
 
@@ -66,24 +91,25 @@ class PlayerControllerTest {
                 .assertNext(response -> {
                     assertThat(response.getStatusCodeValue()).isEqualTo(200);
                     Assertions.assertNotNull(response.getBody());
-                    assertThat(response.getBody().getName()).isEqualTo("Jose");
+                    assertThat(response.getBody().getUserName()).isEqualTo("Jose");
                 })
                 .verifyComplete();
     }
 
     @Test
     void givenRankingDataExists_whenGetRanking_thenReturnsListOfRankings() {
-        PlayerRankingDTO p1 = new PlayerRankingDTO(1, new Player(1L, "Anne", 10, 7, 2, 1, null));
-        PlayerRankingDTO p2 = new PlayerRankingDTO(2, new Player(2L, "Lois", 10, 6, 1, 3, null));
+        PlayerRankingDTO p1 = new PlayerRankingDTO(1, buildPlayer(1L, "Anne"));
+        PlayerRankingDTO p2 = new PlayerRankingDTO(2, buildPlayer(2L, "Lois"));
 
         Mockito.when(playerService.getRanking()).thenReturn(Flux.just(p1, p2));
 
         StepVerifier.create(playerController.getRanking())
                 .assertNext(response -> {
-                    List<PlayerRankingDTO> list = response.getBody();
+                    Assertions.assertNotNull(response.getBody());
+                    List<PlayerRankingDTO> list = response.getBody().getData();
                     assertThat(list).hasSize(2);
-                    assertThat(list.get(0).getName()).isEqualTo("Anne");
-                    assertThat(list.get(1).getName()).isEqualTo("Lois");
+                    assertThat(list.get(0).getUserName()).isEqualTo("Anne");
+                    assertThat(list.get(1).getUserName()).isEqualTo("Lois");
                 })
                 .verifyComplete();
     }

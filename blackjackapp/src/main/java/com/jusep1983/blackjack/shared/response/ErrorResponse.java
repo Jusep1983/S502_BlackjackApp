@@ -1,4 +1,4 @@
-package com.jusep1983.blackjack.shared.exception;
+package com.jusep1983.blackjack.shared.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;

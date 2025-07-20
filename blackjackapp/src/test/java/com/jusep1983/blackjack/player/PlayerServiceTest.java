@@ -1,6 +1,8 @@
 package com.jusep1983.blackjack.player;
 
+import com.jusep1983.blackjack.player.dto.CreatePlayerDTO;
 import com.jusep1983.blackjack.shared.enums.GameResult;
+import com.jusep1983.blackjack.shared.enums.Role;
 import com.jusep1983.blackjack.shared.exception.FieldEmptyException;
 import com.jusep1983.blackjack.shared.exception.PlayerNotFoundException;
 import com.jusep1983.blackjack.shared.exception.UsernameAlreadyExistsException;
@@ -10,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -23,46 +26,73 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class PlayerServiceTest {
 
     @Mock
+    private PasswordEncoder passwordEncoder;
+
+    @Mock
     private PlayerRepository playerRepository;
 
     @InjectMocks
     private PlayerServiceImpl playerService;
 
+    private Player buildPlayer(Long id, String name) {
+        return new Player(
+                id,
+                name,
+                "alias_" + name,
+                "password123",
+                Role.USER,
+                0, 0, 0, 0,
+                LocalDateTime.now()
+        );
+    }
+
     @Test
     void givenPlayerExists_whenGetById_thenReturnsPlayer() {
-        Player mockPlayer = new Player(1L, "Jose", 0, 0, 0, 0, LocalDateTime.now());
+        Player mockPlayer = buildPlayer(1L, "Jose");
         Mockito.when(playerRepository.findById(1L)).thenReturn(Mono.just(mockPlayer));
 
         StepVerifier.create(playerService.getById(1L))
-                .expectNextMatches(p -> p.getName().equals("Jose"))
+                .expectNextMatches(p -> p.getUserName().equals("Jose"))
                 .verifyComplete();
     }
 
     @Test
     void givenValidPlayerData_whenCreatePlayer_thenPlayerIsCreated() {
-        Player input = new Player(null, "  Manolito  ", 0, 0, 0, 0, null);
-        Mockito.when(playerRepository.findByName("Manolito")).thenReturn(Mono.empty());
+        CreatePlayerDTO dto = new CreatePlayerDTO();
+        dto.setUserName("  Manolito  "); // con espacios
+        dto.setPassword("1234");
+
+        // Mock del encoder
+        Mockito.when(passwordEncoder.encode("1234")).thenReturn("encrypted_1234");
+
+        // Simular que no existe el player
+        Mockito.when(playerRepository.findByUserName("Manolito")).thenReturn(Mono.empty());
+
+        // Simular guardado correcto
         Mockito.when(playerRepository.save(Mockito.any())).thenAnswer(inv -> {
             Player p = inv.getArgument(0);
             p.setId(1L);
             return Mono.just(p);
         });
 
-        StepVerifier.create(playerService.createPlayer(input))
+        StepVerifier.create(playerService.createPlayer(dto))
                 .assertNext(player -> {
-                    assert player.getName().equals("Manolito");
-                    assert player.getGamesPlayed() == 0;
-                    assert player.getCreatedAt() != null;
+                    assertThat(player.getUserName()).isEqualTo("Manolito");
+                    assertThat(player.getPassword()).isEqualTo("encrypted_1234"); // opcional
+                    assertThat(player.getGamesPlayed()).isEqualTo(0);
+                    assertThat(player.getCreatedAt()).isNotNull();
                 })
                 .verifyComplete();
     }
 
     @Test
     void givenEmptyPlayerName_whenCreatePlayer_thenThrowsException() {
-        Player input = new Player();
-        input.setName("   ");
+        CreatePlayerDTO dto = new CreatePlayerDTO();
+        dto.setUserName("   ");
+        dto.setPassword("1234");
 
-        StepVerifier.create(playerService.createPlayer(input))
+
+        StepVerifier.create(playerService.createPlayer(dto))
                 .expectErrorSatisfies(error -> {
                     assertThat(error).isInstanceOf(FieldEmptyException.class);
                     assertThat(error.getMessage()).isEqualTo("The field cannot be empty or have only spaces.");
@@ -72,27 +102,28 @@ class PlayerServiceTest {
 
     @Test
     void givenExistingPlayerName_whenCreatePlayer_thenThrowsException() {
-        Player input = new Player();
-        input.setName("Pepe");
+        CreatePlayerDTO dto = new CreatePlayerDTO();
+        dto.setUserName("Pepe"); // con espacios
+        dto.setPassword("1234");
 
-        Mockito.when(playerRepository.findByName("Pepe")).thenReturn(Mono.just(new Player()));
+        Mockito.when(playerRepository.findByUserName("Pepe")).thenReturn(Mono.just(new Player()));
 
-        StepVerifier.create(playerService.createPlayer(input))
+        StepVerifier.create(playerService.createPlayer(dto))
                 .expectErrorSatisfies(error -> {
                     assertThat(error).isInstanceOf(UsernameAlreadyExistsException.class);
-                    assertThat(error.getMessage()).isEqualTo("There is already a player with name " + input.getName());
+                    assertThat(error.getMessage()).isEqualTo("There is already a player with name " + dto.getUserName());
                 });
         Mockito.verify(playerRepository, Mockito.never()).save(Mockito.any());
     }
 
     @Test
     void givenPlayerExists_whenUpdateNameWithValidName_thenNameIsUpdated() {
-        Player existing = new Player(1L, "Antiguo", 0, 0, 0, 0, null);
+        Player existing = buildPlayer(1L, "Antiguo");
         Mockito.when(playerRepository.findById(1L)).thenReturn(Mono.just(existing));
         Mockito.when(playerRepository.save(Mockito.any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         StepVerifier.create(playerService.updateName(1L, "NewName"))
-                .assertNext(p -> assertEquals("NewName", p.getName()))
+                .assertNext(p -> assertEquals("NewName", p.getUserName()))
                 .verifyComplete();
     }
 
@@ -109,15 +140,19 @@ class PlayerServiceTest {
 
     @Test
     void givenPlayerExists_whenUpdateStatsWithWin_thenStatsAreUpdated() {
-        Player player = new Player(null, "Player", 3, 1, 1, 1, null);
+        Player player = buildPlayer(null, "Player");
+        player.setGamesPlayed(3);
+        player.setGamesWon(1);
+        player.setGamesLost(1);
+        player.setGamesTied(1);
 
-        Mockito.when(playerRepository.findByName("Player")).thenReturn(Mono.just(player));
+        Mockito.when(playerRepository.findByUserName("Player")).thenReturn(Mono.just(player));
         Mockito.when(playerRepository.save(Mockito.any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
 
         StepVerifier.create(playerService.updateStats("Player", GameResult.PLAYER_WIN))
                 .assertNext(p -> {
-                    assert p.getGamesPlayed() == 4;
-                    assert p.getGamesWon() == 2;
+                    assertThat(p.getGamesPlayed()).isEqualTo(4);
+                    assertThat(p.getGamesWon()).isEqualTo(2);
                 })
                 .verifyComplete();
     }
@@ -136,18 +171,25 @@ class PlayerServiceTest {
 
     @Test
     void givenPlayersExist_whenGetRanking_thenReturnsOrderedRanking() {
-        Player p1 = new Player(1L, "Alice", 10, 5, 2, 3, LocalDateTime.now());
-        Player p2 = new Player(2L, "Bob", 8, 3, 1, 4, LocalDateTime.now());
+        Player p1 = buildPlayer(1L, "Alice");
+        p1.setGamesPlayed(10);
+        p1.setGamesWon(5);
+        p1.setGamesLost(2);
+        p1.setGamesTied(3);
 
-        // Simulamos que el repositorio devuelve jugadores ordenados por gamesWon desc
+        Player p2 = buildPlayer(2L, "Bob");
+        p2.setGamesPlayed(8);
+        p2.setGamesWon(3);
+        p2.setGamesLost(1);
+        p2.setGamesTied(4);
+
         Mockito.when(playerRepository.findAllByOrderByGamesWonDesc())
                 .thenReturn(Flux.just(p1, p2));
 
         StepVerifier.create(playerService.getRanking())
-                .expectNextMatches(dto -> dto.getPosition() == 1 && dto.getName().equals("Alice"))
-                .expectNextMatches(dto -> dto.getPosition() == 2 && dto.getName().equals("Bob"))
+                .expectNextMatches(dto -> dto.getPosition() == 1 && dto.getUserName().equals("Alice"))
+                .expectNextMatches(dto -> dto.getPosition() == 2 && dto.getUserName().equals("Bob"))
                 .verifyComplete();
     }
-
 }
 

@@ -23,7 +23,7 @@ public class Game {
     @Schema(description = "Unique identifier of the game", example = "123456789abcdef")
     private String id;
     @Schema(description = "Name of the player", example = "Pasqual")
-    private String playerName;
+    private String userName;
     @Schema(description = "Current status of the game", example = "NEW")
     private GameStatus gameStatus = GameStatus.NO_STATUS;
     @Schema(description = "Date and time when the game was created", example = "2025-07-05T14:30:00")
@@ -41,8 +41,8 @@ public class Game {
     private GameResult gameResult;
     private Deck deck;
 
-    public Game(String playerName) {
-        this.playerName = playerName;
+    public Game(String userName) {
+        this.userName = userName;
         this.createdAt = LocalDateTime.now();
     }
 

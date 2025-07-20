@@ -10,7 +10,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class GameResponseDTO {
+public class GameStatusDTO {
     private String gameStatus;
     private int playerPoints;
     private int dealerPoints;

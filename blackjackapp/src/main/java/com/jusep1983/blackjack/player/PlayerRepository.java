@@ -7,7 +7,7 @@ import reactor.core.publisher.Mono;
 
 @Repository
 public interface PlayerRepository extends R2dbcRepository<Player,Long> {
-    Mono<Player> findByName(String name);
+    Mono<Player> findByUserName(String userName);
     Flux<Player> findAllByOrderByGamesWonDesc();
 
 }

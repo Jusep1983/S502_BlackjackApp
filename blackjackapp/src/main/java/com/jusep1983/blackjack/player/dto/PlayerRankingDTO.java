@@ -1,5 +1,6 @@
-package com.jusep1983.blackjack.player;
+package com.jusep1983.blackjack.player.dto;
 
+import com.jusep1983.blackjack.player.Player;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.Getter;
@@ -14,7 +15,7 @@ public class PlayerRankingDTO {
     private int position;
 
     @Schema(description = "Name of the player", example = "Jose")
-    private String name;
+    private String userName;
 
     @Schema(description = "Number of games the player has played", example = "20")
     private int gamesPlayed;
@@ -33,9 +34,9 @@ public class PlayerRankingDTO {
 
 
 
-    public PlayerRankingDTO(int position,Player player) {
+    public PlayerRankingDTO(int position, Player player) {
         this.position = position;
-        this.name = player.getName();
+        this.userName = player.getUserName();
         this.gamesPlayed = player.getGamesPlayed();
         this.gamesWon = player.getGamesWon();
         this.gamesLost = player.getGamesLost();

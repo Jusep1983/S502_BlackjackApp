@@ -1,10 +1,14 @@
 package com.jusep1983.blackjack.player;
 
+import com.jusep1983.blackjack.player.dto.CreatePlayerDTO;
+import com.jusep1983.blackjack.player.dto.PlayerRankingDTO;
 import com.jusep1983.blackjack.shared.enums.GameResult;
+import com.jusep1983.blackjack.shared.enums.Role;
 import com.jusep1983.blackjack.shared.exception.FieldEmptyException;
 import com.jusep1983.blackjack.shared.exception.PlayerNotFoundException;
 import com.jusep1983.blackjack.shared.exception.UsernameAlreadyExistsException;
 import lombok.Data;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -15,31 +19,39 @@ import java.time.LocalDateTime;
 @Service
 public class PlayerServiceImpl implements PlayerService {
     private final PlayerRepository playerRepository;
-    public PlayerServiceImpl(PlayerRepository playerRepository) {
+    private final PasswordEncoder passwordEncoder;
+
+    public PlayerServiceImpl(PlayerRepository playerRepository,PasswordEncoder passwordEncoder) {
         this.playerRepository = playerRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
-    public Mono<Player> createPlayer(Player player) {
-        String trimmedName = player.getName() != null ? player.getName().trim() : "";
+    public Mono<Player> createPlayer(CreatePlayerDTO dto) {
+        String trimmedName = dto.getUserName() != null ? dto.getUserName().trim() : "";
+
         if (trimmedName.isEmpty()) {
-            return Mono.error(new FieldEmptyException("The field cannot be empty or have only spaces."));
+            return Mono.error(new FieldEmptyException("Username cannot be empty or only spaces"));
         }
-        return playerRepository.findByName(trimmedName)
-                .flatMap(existing -> Mono.error(new UsernameAlreadyExistsException("There is already a player with name " + trimmedName)))
-                .switchIfEmpty(Mono.defer(() -> {
-                    Player newPlayer = new Player();
-                    newPlayer.setId(null);
-                    newPlayer.setName(trimmedName);
-                    newPlayer.setGamesPlayed(0);
-                    newPlayer.setGamesWon(0);
-                    newPlayer.setGamesTied(0);
-                    newPlayer.setGamesLost(0);
-                    newPlayer.setCreatedAt(LocalDateTime.now());
-                    return Mono.just(newPlayer);
-                }))
-                .cast(Player.class)
-                .flatMap(playerRepository::save); // Guardar el nuevo player
+        return playerRepository.findByUserName(trimmedName)
+                .flatMap(existing -> Mono.<Player>error(
+                        new UsernameAlreadyExistsException("Username already taken: " + trimmedName)
+                ))
+                .switchIfEmpty(createAndSaveNewPlayer(dto, trimmedName));
+    }
+
+    private Mono<Player> createAndSaveNewPlayer(CreatePlayerDTO dto, String trimmedName) {
+        Player newPlayer = new Player();
+        newPlayer.setUserName(trimmedName);
+        newPlayer.setAlias(trimmedName);
+        newPlayer.setPassword(passwordEncoder.encode(dto.getPassword()));
+        newPlayer.setRole(Role.USER);
+        newPlayer.setGamesPlayed(0);
+        newPlayer.setGamesWon(0);
+        newPlayer.setGamesTied(0);
+        newPlayer.setGamesLost(0);
+        newPlayer.setCreatedAt(LocalDateTime.now());
+        return playerRepository.save(newPlayer);
     }
 
     @Override
@@ -47,7 +59,7 @@ public class PlayerServiceImpl implements PlayerService {
         return playerRepository.findById(id)
                 .switchIfEmpty(Mono.error(new PlayerNotFoundException("Player not found with id: " + id)))
                 .flatMap(player -> {
-                    player.setName(newName.trim());
+                    player.setUserName(newName.trim());
                     return playerRepository.save(player);
                 });
     }
@@ -60,7 +72,7 @@ public class PlayerServiceImpl implements PlayerService {
 
     @Override
     public Mono<Player> getByName(String name) {
-        return playerRepository.findByName(name)
+        return playerRepository.findByUserName(name)
                 .switchIfEmpty(Mono.empty());
     }
 

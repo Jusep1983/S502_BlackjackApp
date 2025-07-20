@@ -8,13 +8,13 @@ import lombok.Setter;
 @Getter
 public class CreateGameDTO {
     @NotBlank(message = "Player name is required")
-    private String playerName;
+    private String userName;
 
     public CreateGameDTO() {
     }
 
-    public CreateGameDTO(String playerName) {
-        this.playerName = playerName;
+    public CreateGameDTO(String userName) {
+        this.userName = userName;
     }
 
 }
