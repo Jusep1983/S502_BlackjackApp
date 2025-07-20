@@ -1,61 +1,147 @@
-/* 🔧 Fondo global */
+/* 🌌 Fondo global estilo neon */
 html, body {
-  background-color: #121212;
-  color: #f1f1f1;
+  background: linear-gradient(to bottom, #0d0d0d, #1a1a1a);
+  color: #f4f4f4;
+  font-family: 'Orbitron', sans-serif;
   margin: 0;
   padding: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  scroll-behavior: smooth;
 }
 
-/* 🧱 Contenido con márgenes controlados */
+/* 🎮 Contenedor central con sombra y animación */
 body {
-  padding: 30px;
+  max-width: 900px;
+  margin: auto;
+  padding: 40px 20px;
+  box-shadow: 0 0 60px rgba(0, 255, 255, 0.05);
 }
 
-/* 🧩 Secciones oscuras */
+/* 🧱 Secciones como tarjetas flotantes */
 section {
-  border: 1px solid #333;
-  padding: 20px;
-  margin-bottom: 25px;
-  border-radius: 8px;
-  background-color: #1e1e1e;
-  box-shadow: 0 2px 5px rgba(255, 255, 255, 0.05);
+  background: rgba(30, 30, 30, 0.95);
+  border: 2px solid #00f0ff;
+  border-radius: 12px;
+  padding: 25px 35px;
+  margin-bottom: 40px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.1);
+  transition: transform 0.3s ease, border-color 0.3s;
+}
+section:hover {
+  transform: scale(1.015);
+  border-color: #00e0ff;
 }
 
-/* 🎨 Títulos */
-h1, h2 {
-  color: #4dabf7;
+/* 🎲 Encabezado */
+h1 {
+  text-align: center;
+  font-size: 2.8rem;
+  color: #00e0ff;
+  text-shadow: 0 0 15px #00ffff99;
+  margin-bottom: 40px;
+}
+h2 {
+  color: #00c8ff;
   margin-top: 0;
+  text-shadow: 0 0 8px #00ffff44;
 }
 
-/* ✏️ Inputs y botones */
-input[type="text"],
-button {
-  padding: 8px 12px;
-  margin: 5px 0;
-  border: 1px solid #555;
-  border-radius: 6px;
-  font-size: 14px;
-  background-color: #2c2c2c;
-  color: #f1f1f1;
-}
-
-input[type="text"]:focus {
-  border-color: #4dabf7;
+/* 🧊 Inputs */
+input[type="text"] {
+  width: 100%;
+  padding: 12px 16px;
+  margin-top: 10px;
+  margin-bottom: 20px;
+  font-size: 16px;
+  background: #1f1f1f;
+  border: 2px solid #00aaff;
+  border-radius: 8px;
+  color: #fff;
   outline: none;
-  background-color: #3a3a3a;
+  transition: all 0.3s;
+}
+input[type="text"]:focus {
+  border-color: #00ffff;
+  background: #2a2a2a;
 }
 
+/* 🔘 Botones estilo arcade */
 button {
-  background-color: #4dabf7;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #00f0ff, #00aaff);
   color: #121212;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  box-shadow: 0 0 12px rgba(0, 255, 255, 0.5);
+  text-transform: uppercase;
+  transition: transform 0.2s ease, background 0.3s;
+}
+button:hover {
+  transform: translateY(-2px) scale(1.02);
+  background: linear-gradient(90deg, #00ffff, #00bbff);
 }
 
-button:hover {
-  background-color: #3390ff;
+/* 📝 Game details con monospace para estilo consola */
+#gameDetails {
+  font-family: 'Courier New', monospace;
+  white-space: pre-wrap;
+  background-color: #111;
+  padding: 20px;
+  border-radius: 8px;
+  border-left: 4px solid #00f0ff;
+  margin-top: 10px;
+  color: #aaffff;
+  box-shadow: inset 0 0 10px #00ffff33;
 }
+
+/* 🏆 Ranking estilizado */
+ul {
+  list-style: none;
+  padding: 0;
+}
+li {
+  padding: 10px;
+  margin-bottom: 8px;
+  background: #222;
+  border-left: 4px solid #00ffff;
+  border-radius: 6px;
+  color: #e0e0e0;
+  box-shadow: 0 0 5px rgba(0, 255, 255, 0.1);
+}
+
+/* 🎴 Cartas en texto estilizadas */
+.card {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background-color: #2a2a2a;
+  border: 1px solid #00ffff99;
+  color: #fff;
+  font-size: 13px;
+  box-shadow: 0 0 3px #00ffff44;
+}
+
+/* 📱 Responsive */
+@media (max-width: 600px) {
+  body {
+    padding: 20px;
+  }
+
+  button {
+    width: 100%;
+    font-size: 14px;
+  }
+
+  input[type="text"] {
+    font-size: 14px;
+  }
+}
+
 
 /* 📋 Listas */
 ul {
