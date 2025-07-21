@@ -6,7 +6,12 @@ const api = isLocal
   ? "http://localhost:8080"
   : "https://s501-blackjack-api.onrender.com";
 
-// 🔐 Lógica de login
+// Al cargar la página, ocultamos los botones de acción
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("actionButtons").style.display = "none";
+});
+
+// 🔐 Login del usuario
 function login() {
   const user = document.getElementById("loginUser").value;
   const pass = document.getElementById("loginPass").value;
@@ -31,7 +36,7 @@ function login() {
     });
 }
 
-// 🃏 Crear nueva partida
+// ➕ Crear partida
 function createGame() {
   fetch(`${api}/game/new`, {
     method: "POST",
@@ -43,16 +48,19 @@ function createGame() {
     .then(res => res.json())
     .then(data => {
       currentGameId = data.data.id;
-      document.getElementById("gameId").value = currentGameId; // Auto-rellena input
+      document.getElementById("gameId").value = currentGameId;
       alert("Partida creada con ID: " + currentGameId);
-      getGame(); // Mostramos directamente los detalles
+      getGame(); // mostrar detalles directamente
     });
 }
 
-// 👁️ Ver detalles de partida
+// 👁️ Ver detalles
 function getGame() {
   const id = document.getElementById("gameId").value || currentGameId;
-  if (!id) return;
+  if (!id) {
+    document.getElementById("actionButtons").style.display = "none";
+    return;
+  }
 
   fetch(`${api}/game/${id}`, {
     headers: { Authorization: `Bearer ${token}` }
@@ -70,10 +78,17 @@ function getGame() {
         `🧑‍💼 Jugador (${game.playerPoints}): ${playerCards}\n` +
         `🤖 Dealer (${game.dealerPoints}): ${dealerCards}\n\n` +
         `Resultado: ${game.gameResult || "En juego..."}`;
+
+      // 🔄 Mostrar/ocultar acciones según estado
+      if (game.gameStatus === "NEW" || game.gameStatus === "IN_PROGRESS") {
+        document.getElementById("actionButtons").style.display = "block";
+      } else {
+        document.getElementById("actionButtons").style.display = "none";
+      }
     });
 }
 
-// ➕ Pedir carta
+// 🃏 Pedir carta
 function hit() {
   if (!currentGameId) return alert("Primero crea o consulta una partida");
   fetch(`${api}/game/${currentGameId}/hit`, {
@@ -95,7 +110,7 @@ function stand() {
     .then(getGame);
 }
 
-// 📊 Ranking público
+// 🏆 Ranking
 function getRanking() {
   fetch(`${api}/player/ranking`, {
     headers: { Authorization: `Bearer ${token}` }
@@ -112,7 +127,7 @@ function getRanking() {
     });
 }
 
-// ♠️♥️♦️♣️ Convertir texto a símbolo
+// ♠️♥️♦️♣️ Símbolos de palos
 function getSuit(suit) {
   switch (suit) {
     case "HEARTS": return "♥️";

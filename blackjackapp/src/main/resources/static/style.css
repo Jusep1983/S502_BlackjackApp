@@ -48,8 +48,9 @@ h2 {
 }
 
 /* 🧊 Inputs */
-input[type="text"] {
-  width: 100%;
+input[type="text"],
+input[type="password"] {
+  width: 96%;
   padding: 12px 16px;
   margin-top: 10px;
   margin-bottom: 20px;
@@ -61,7 +62,8 @@ input[type="text"] {
   outline: none;
   transition: all 0.3s;
 }
-input[type="text"]:focus {
+input[type="text"],
+input[type="password"]:focus {
   border-color: #00ffff;
   background: #2a2a2a;
 }

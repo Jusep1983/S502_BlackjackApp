@@ -1,6 +1,8 @@
 package com.jusep1983.blackjack.shared.exception;
 
-public class UnauthorizedGameAccessException extends RuntimeException {
+import org.springframework.security.access.AccessDeniedException;
+
+public class UnauthorizedGameAccessException extends AccessDeniedException {
     public UnauthorizedGameAccessException(String message) {
         super(message);
     }

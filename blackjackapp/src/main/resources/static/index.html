@@ -8,7 +8,7 @@
 <body>
 <h1>Blackjack API Front</h1>
 
-<!-- 🔐 Panel de login -->
+<!-- 🔐 Login -->
 <section id="loginPanel">
     <h2>Login</h2>
     <input type="text" id="loginUser" placeholder="Nombre de usuario" />
@@ -17,7 +17,7 @@
     <div id="loginError" style="color:red;"></div>
 </section>
 
-<!-- 🎮 Panel principal del juego (oculto hasta login) -->
+<!-- 🎮 Juego principal -->
 <div id="gamePanel" style="display: none;">
     <section>
         <h2>Crear partida</h2>
@@ -29,12 +29,13 @@
         <input type="text" id="gameId" placeholder="ID" />
         <button onclick="getGame()">Ver</button>
         <div id="gameDetails"></div>
-    </section>
 
-    <section>
-        <h2>Acciones</h2>
-        <button onclick="hit()">HIT</button>
-        <button onclick="stand()">STAND</button>
+        <!-- 👇 Ahora todo lo relacionado con acciones va dentro del div -->
+        <div id="actionButtons" style="margin-top: 20px; display: none;">
+            <h3>Acciones</h3>
+            <button onclick="hit()">HIT</button>
+            <button onclick="stand()">STAND</button>
+        </div>
     </section>
 
     <section>

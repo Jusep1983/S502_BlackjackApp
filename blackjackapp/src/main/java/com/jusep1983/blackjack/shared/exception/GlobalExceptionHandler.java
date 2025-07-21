@@ -6,6 +6,7 @@ import com.jusep1983.blackjack.shared.response.MyApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.support.WebExchangeBindException;
@@ -45,6 +46,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(UnauthorizedGameAccessException.class)
     public Mono<ResponseEntity<MyApiResponse<ErrorResponse>>> handleForbidden(UnauthorizedGameAccessException ex, ServerHttpRequest request) {
+        return response(HttpStatus.FORBIDDEN, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public Mono<ResponseEntity<MyApiResponse<ErrorResponse>>> handleAccessDenied(AccessDeniedException ex, ServerHttpRequest request) {
         return response(HttpStatus.FORBIDDEN, ex.getMessage(), request);
     }
 

@@ -27,64 +27,76 @@ public class GameController {
         this.gameService = gameService;
     }
 
-    @Operation(summary = "Create a new Blackjack game for the logged-in user")
-    @ApiResponse(responseCode = "201", description = "Game created successfully")
-    @ApiResponse(responseCode = "403", description = "User not authenticated or access denied")
-    @ApiResponse(responseCode = "500", description = "Internal server error")
+    /* ---------------------------------------------------------------------
+     * Crear partida
+     * ------------------------------------------------------------------ */
+    @Operation(summary = "Create a new game for the authenticated player")
+    @ApiResponse(responseCode = "201", description = "Game created")
+    @ApiResponse(responseCode = "404", description = "Player not found")
     @PostMapping("/new")
     public Mono<ResponseEntity<MyApiResponse<Game>>> createGame(
-            @Parameter(hidden = true) @AuthenticationPrincipal String userName
+            @RequestBody(required = false) CreateGameDTO ignored // opcional; el user viene del token
     ) {
-        return gameService.createGame(userName)
+        return gameService.createGame()
                 .map(game -> ResponseBuilder.created("Game created", game));
     }
 
+    /* ---------------------------------------------------------------------
+     * Obtener partida por ID
+     * ------------------------------------------------------------------ */
     @Operation(summary = "Get game details by ID")
     @ApiResponse(responseCode = "200", description = "Game found")
     @ApiResponse(responseCode = "404", description = "Game not found")
-    @ApiResponse(responseCode = "500", description = "Internal server error")
+    @ApiResponse(responseCode = "403", description = "Access denied")
     @GetMapping("/{id}")
     public Mono<ResponseEntity<MyApiResponse<Game>>> getGameById(
             @Parameter(description = "ID of the game to retrieve", required = true)
-            @PathVariable String id,
-            @Parameter(hidden = true) @AuthenticationPrincipal String userName
+            @PathVariable String id
     ) {
-        return gameService.getGameById(id, userName)
+        return gameService.getGameById(id)
                 .map(game -> ResponseBuilder.ok("Game " + id + " found", game));
     }
 
-    @Operation(summary = "Delete game by ID")
-    @ApiResponse(responseCode = "204", description = "Game deleted successfully")
+    /* ---------------------------------------------------------------------
+     * Player HIT
+     * ------------------------------------------------------------------ */
+    @Operation(summary = "Player hits (draws a card)")
+    @ApiResponse(responseCode = "200", description = "Card drawn / Game updated")
     @ApiResponse(responseCode = "404", description = "Game not found")
-    @ApiResponse(responseCode = "500", description = "Internal server error")
-    @DeleteMapping("/{id}/delete")
-    public Mono<ResponseEntity<MyApiResponse<Game>>> deleteById(
-            @PathVariable String id,
-            @AuthenticationPrincipal String userName
-    ) {
-        return gameService.deleteGameById(id, userName)
-                .then(Mono.just((ResponseBuilder.ok("Game " + id + " deleted successfully", null))));
-    }
-
-    @Operation(summary = "Draw a card (hit)")
-    @ApiResponse(responseCode = "200", description = "Card drawn")
+    @ApiResponse(responseCode = "403", description = "Access denied")
     @PostMapping("/{id}/hit")
-    public Mono<ResponseEntity<MyApiResponse<Game>>> hit(
-            @PathVariable String id,
-            @Parameter(hidden = true) @AuthenticationPrincipal String userName
+    public Mono<ResponseEntity<MyApiResponse<Game>>> playerHit(
+            @PathVariable("id") String gameId
     ) {
-        return gameService.playerHit(id, userName)
+        return gameService.playerHit(gameId)
                 .map(game -> ResponseBuilder.ok("Card drawn", game));
     }
 
-    @Operation(summary = "Stand and let dealer play")
-    @ApiResponse(responseCode = "200", description = "Player stands")
+    /* ---------------------------------------------------------------------
+     * Player STAND
+     * ------------------------------------------------------------------ */
+    @Operation(summary = "Player stands (dealer plays, game resolves)")
+    @ApiResponse(responseCode = "200", description = "Game finished")
+    @ApiResponse(responseCode = "404", description = "Game not found")
+    @ApiResponse(responseCode = "403", description = "Access denied")
     @PostMapping("/{id}/stand")
-    public Mono<ResponseEntity<MyApiResponse<Game>>> stand(
-            @PathVariable String id,
-            @Parameter(hidden = true) @AuthenticationPrincipal String userName
+    public Mono<ResponseEntity<MyApiResponse<Game>>> playerStand(
+            @PathVariable("id") String gameId
     ) {
-        return gameService.playerStand(id, userName)
-                .map(game -> ResponseBuilder.ok("Player stands", game));
+        return gameService.playerStand(gameId)
+                .map(game -> ResponseBuilder.ok("Game finished", game));
+    }
+
+    /* ---------------------------------------------------------------------
+     * Delete game
+     * ------------------------------------------------------------------ */
+    @Operation(summary = "Delete a game (owner only)")
+    @ApiResponse(responseCode = "204", description = "Game deleted")
+    @ApiResponse(responseCode = "404", description = "Game not found")
+    @ApiResponse(responseCode = "403", description = "Access denied")
+    @DeleteMapping("/{id}")
+    public Mono<ResponseEntity<MyApiResponse<Void>>> deleteGame(@PathVariable String id) {
+        return gameService.deleteGameById(id)
+                .thenReturn(ResponseBuilder.ok("Game deleted", null));
     }
 }

@@ -13,8 +13,7 @@ import com.jusep1983.blackjack.shared.exception.GameNotFoundException;
 import com.jusep1983.blackjack.shared.exception.PlayerNotFoundException;
 import com.jusep1983.blackjack.shared.exception.UnauthorizedGameAccessException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.context.SecurityContextHolder;
+import com.jusep1983.blackjack.shared.utils.AuthUtils;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -29,182 +28,181 @@ public class GameServiceImpl implements GameService {
     private final HandService handService;
     private final PlayerService playerService;
 
-    @Override
-    public Mono<Game> createGame(String userName) {
-        return playerService.getByName(userName)
-                .switchIfEmpty(Mono.error(new PlayerNotFoundException("Player not found: " + userName)))
-                .flatMap(player -> {
-                    Game game = new Game();
-                    game.setUserName(userName);  // ahora usamos userName, no playerName
-                    game.setGameStatus(GameStatus.NEW);
-                    game.setCreatedAt(LocalDateTime.now());
+    /* -------------------------------------------------------------------------
+     * Helpers privados
+     * ---------------------------------------------------------------------- */
 
-                    Deck deck = deckService.createDeck();
-                    deckService.shuffleDeck(deck);
-                    game.setDeck(deck);
-
-                    game.setPlayerHand(new Hand());
-                    game.setDealerHand(new Hand());
-
-                    handService.addCardToHand(game.getPlayerHand(), deckService.drawCard(deck));
-                    handService.addCardToHand(game.getPlayerHand(), deckService.drawCard(deck));
-                    handService.addCardToHand(game.getDealerHand(), deckService.drawCard(deck));
-                    handService.addCardToHand(game.getDealerHand(), deckService.drawCard(deck));
-
-                    int playerPoints = handService.calculatePoints(game.getPlayerHand());
-                    int dealerPoints = handService.calculatePoints(game.getDealerHand());
-                    game.setPlayerPoints(playerPoints);
-                    game.setDealerPoints(dealerPoints);
-
-                    return gameRepository.save(game);
-                });
+    private Mono<Game> requireOwnership(Game game, String currentUser) {
+        if (!game.getUserName().equals(currentUser)) {
+            return Mono.error(new UnauthorizedGameAccessException("This is not your game"));
+        }
+        return Mono.just(game);
     }
 
-//    @Override
-//    public Mono<Game> getGameById(String id) {
-//        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
-//        return gameRepository.findById(id)
-//                .switchIfEmpty(Mono.error(new GameNotFoundException("Game not found with id: " + id)))
-//                .flatMap(game -> {
-//                    if (!game.getUserName().equals(userName)) {
-//                        return Mono.error(new AccessDeniedException("This is not your game"));
-//                    }
-//                    return Mono.just(game);
-//                });
-//    }
-
-    public Mono<Game> getGameById(String id, String userName) {
+    private Mono<Game> findGameOr404(String id) {
         return gameRepository.findById(id)
-                .switchIfEmpty(Mono.error(new GameNotFoundException("Game not found with id: " + id)))
-                .flatMap(game -> {
-                    if (!game.getUserName().equals(userName)) {
-                        return Mono.error(new AccessDeniedException("This is not your game"));
-                    }
-                    return Mono.just(game);
-                });
+                .switchIfEmpty(Mono.error(new GameNotFoundException("Game not found with id: " + id)));
     }
 
-//    @Override
-//    public Mono<Void> deleteGameById(String id) {
-//        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
-//        return gameRepository.findById(id)
-//                .switchIfEmpty(Mono.error(new GameNotFoundException("Game not found with id: " + id)))
-//                .flatMap(game -> {
-//                    if (!game.getUserName().equals(userName)) {
-//                        return Mono.error(new UnauthorizedGameAccessException("You are not the owner of this game"));
-//                    }
-//                    return gameRepository.deleteById(id);
-//                });
-//    }
-
+    /* -------------------------------------------------------------------------
+     * Crear partida
+     * ---------------------------------------------------------------------- */
     @Override
-    public Mono<Void> deleteGameById(String gameId, String userName) {
-        return getGameById(gameId, userName) // esto ya verifica que es el propietario
-                .flatMap(gameRepository::delete);
+    public Mono<Game> createGame() {
+        return AuthUtils.getCurrentUserName()
+                .flatMap(userName ->
+                        playerService.getByName(userName)
+                                .switchIfEmpty(Mono.error(new PlayerNotFoundException("Player not found: " + userName)))
+                                .flatMap(player -> {
+                                    Game game = new Game();
+                                    game.setUserName(userName);
+                                    game.setGameStatus(GameStatus.NEW);
+                                    game.setCreatedAt(LocalDateTime.now());
+                                    // Crear y preparar mazo
+                                    Deck deck = deckService.createDeck();
+                                    deckService.shuffleDeck(deck);
+                                    game.setDeck(deck);
+                                    // Manos iniciales
+                                    game.setPlayerHand(new Hand());
+                                    game.setDealerHand(new Hand());
+                                    // Repartir 2 cartas a jugador y dealer
+                                    handService.addCardToHand(game.getPlayerHand(), deckService.drawCard(deck));
+                                    handService.addCardToHand(game.getPlayerHand(), deckService.drawCard(deck));
+                                    handService.addCardToHand(game.getDealerHand(), deckService.drawCard(deck));
+                                    handService.addCardToHand(game.getDealerHand(), deckService.drawCard(deck));
+                                    // Calcular puntos iniciales
+                                    int playerPoints = handService.calculatePoints(game.getPlayerHand());
+                                    int dealerPoints = handService.calculatePoints(game.getDealerHand());
+                                    game.setPlayerPoints(playerPoints);
+                                    game.setDealerPoints(dealerPoints);
+                                    // Estado inicial: IN_PROGRESS salvo blackjack instantáneo
+                                    if (playerPoints == 21 && dealerPoints != 21) {
+                                        game.setGameStatus(GameStatus.FINISHED);
+                                        game.setGameResult(GameResult.PLAYER_WIN);
+                                    } else if (dealerPoints == 21 && playerPoints != 21) {
+                                        game.setGameStatus(GameStatus.FINISHED);
+                                        game.setGameResult(GameResult.DEALER_WIN);
+                                    } else if (dealerPoints == 21 && playerPoints == 21) {
+                                        game.setGameStatus(GameStatus.FINISHED);
+                                        game.setGameResult(GameResult.TIE);
+                                    } else {
+                                        game.setGameStatus(GameStatus.IN_PROGRESS);
+                                    }
+                                    return gameRepository.save(game)
+                                            .flatMap(saved -> {
+                                                // Si la partida terminó instantáneamente (blackjack), actualizamos stats
+                                                if (saved.getGameStatus() == GameStatus.FINISHED) {
+                                                    return playerService.updateStats(saved.getUserName(), saved.getGameResult())
+                                                            .thenReturn(saved);
+                                                }
+                                                return Mono.just(saved);
+                                            });
+                                })
+                );
     }
 
+    /* -------------------------------------------------------------------------
+     * Obtener partida por ID
+     * ---------------------------------------------------------------------- */
     @Override
-    public Mono<Game> playerHit(String gameId, String userName) {
-        return gameRepository.findById(gameId)
-                .switchIfEmpty(Mono.error(new GameNotFoundException("Game not found with id: " + gameId)))
-                .flatMap(game -> {
-                    if (!game.getUserName().equals(userName)) {
-                        return Mono.error(new UnauthorizedGameAccessException("You are not the owner of this game"));
-                    }
-
-                    if (game.getGameStatus() == GameStatus.FINISHED) {
-                        return Mono.error(new GameAlreadyFinishedException("Game has already finished"));
-                    }
-
-                    Deck deck = game.getDeck();
-                    Card card = deckService.drawCard(deck);
-                    handService.addCardToHand(game.getPlayerHand(), card);
-
-                    int points = handService.calculatePoints(game.getPlayerHand());
-                    game.setPlayerPoints(points);
-
-                    if (points > 21) {
-                        game.setGameStatus(GameStatus.FINISHED);
-                        game.setGameResult(GameResult.DEALER_WIN);
-                        return gameRepository.save(game)
-                                .flatMap(g -> playerService.updateStats(g.getUserName(), GameResult.DEALER_WIN).thenReturn(g));
-                    } else {
-                        game.setGameStatus(GameStatus.IN_PROGRESS);
-                        return gameRepository.save(game);
-                    }
-                });
+    public Mono<Game> getGameById(String id) {
+        return AuthUtils.getCurrentUserName()
+                .flatMap(currentUser ->
+                        findGameOr404(id)
+                                .flatMap(game -> requireOwnership(game, currentUser))
+                );
     }
 
-//    @Override
-//    public Mono<Game> playerStand(String gameId) {
-//        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
-//        return getGameById(gameId)
-//                .flatMap(game -> {
-//
-//                    // Verifica que el usuario autenticado sea el propietario de la partida
-//                    if (!game.getUserName().equals(userName)) {
-//                        return Mono.error(new UnauthorizedGameAccessException("You are not the owner of this game"));
-//                    }
-//
-//                    Deck deck = game.getDeck();
-//
-//                    // Dealer golpea hasta al menos 17 puntos
-//                    while (handService.calculatePoints(game.getDealerHand()) < 17) {
-//                        Card card = deckService.drawCard(deck);
-//                        handService.addCardToHand(game.getDealerHand(), card);
-//                    }
-//
-//                    int playerPoints = handService.calculatePoints(game.getPlayerHand());
-//                    int dealerPoints = handService.calculatePoints(game.getDealerHand());
-//
-//                    game.setPlayerPoints(playerPoints);
-//                    game.setDealerPoints(dealerPoints);
-//                    game.setGameStatus(GameStatus.FINISHED);
-//
-//                    GameResult result = determineResult(playerPoints, dealerPoints);
-//                    game.setGameResult(result);
-//
-//                    return gameRepository.save(game)
-//                            .flatMap(savedGame -> playerService.updateStats(savedGame.getUserName(), result)
-//                                    .thenReturn(savedGame));
-//                });
-//    }
-
+    /* -------------------------------------------------------------------------
+     * Eliminar partida
+     * ---------------------------------------------------------------------- */
     @Override
-    public Mono<Game> playerStand(String gameId, String userName) {
-        return getGameById(gameId, userName)
-                .flatMap(game -> {
-                    // Verifica que el usuario autenticado sea el propietario de la partida
-                    if (!game.getUserName().equals(userName)) {
-                        return Mono.error(new UnauthorizedGameAccessException("You are not the owner of this game"));
-                    }
-
-                    Deck deck = game.getDeck();
-
-                    // Dealer golpea hasta al menos 17 puntos
-                    while (handService.calculatePoints(game.getDealerHand()) < 17) {
-                        Card card = deckService.drawCard(deck);
-                        handService.addCardToHand(game.getDealerHand(), card);
-                    }
-
-                    int playerPoints = handService.calculatePoints(game.getPlayerHand());
-                    int dealerPoints = handService.calculatePoints(game.getDealerHand());
-
-                    game.setPlayerPoints(playerPoints);
-                    game.setDealerPoints(dealerPoints);
-                    game.setGameStatus(GameStatus.FINISHED);
-
-                    GameResult result = determineResult(playerPoints, dealerPoints);
-                    game.setGameResult(result);
-
-                    return gameRepository.save(game)
-                            .flatMap(savedGame -> playerService.updateStats(savedGame.getUserName(), result)
-                                    .thenReturn(savedGame));
-                });
+    public Mono<Void> deleteGameById(String id) {
+        return AuthUtils.getCurrentUserName()
+                .flatMap(currentUser ->
+                        findGameOr404(id)
+                                .flatMap(game -> requireOwnership(game, currentUser))
+                                .flatMap(g -> gameRepository.deleteById(id))
+                );
     }
 
+    /* -------------------------------------------------------------------------
+     * Player HIT (pedir carta)
+     * ---------------------------------------------------------------------- */
+    @Override
+    public Mono<Game> playerHit(String gameId) {
+        return AuthUtils.getCurrentUserName()
+                .flatMap(currentUser ->
+                        findGameOr404(gameId)
+                                .flatMap(game -> requireOwnership(game, currentUser))
+                                .flatMap(game -> {
 
+                                    if (game.getGameStatus() == GameStatus.FINISHED) {
+                                        return Mono.error(new GameAlreadyFinishedException("Game has already finished"));
+                                    }
 
+                                    Deck deck = game.getDeck();
+                                    Card card = deckService.drawCard(deck);
+                                    handService.addCardToHand(game.getPlayerHand(), card);
+
+                                    int points = handService.calculatePoints(game.getPlayerHand());
+                                    game.setPlayerPoints(points);
+
+                                    if (points > 21) {
+                                        // Jugador se pasa -> Dealer gana
+                                        game.setGameStatus(GameStatus.FINISHED);
+                                        game.setGameResult(GameResult.DEALER_WIN);
+                                        return gameRepository.save(game)
+                                                .flatMap(g -> playerService.updateStats(g.getUserName(), GameResult.DEALER_WIN)
+                                                        .thenReturn(g));
+                                    } else {
+                                        // Sigue la partida
+                                        game.setGameStatus(GameStatus.IN_PROGRESS);
+                                        return gameRepository.save(game);
+                                    }
+                                })
+                );
+    }
+
+    /* -------------------------------------------------------------------------
+     * Player STAND (plantarse / turno del dealer)
+     * ---------------------------------------------------------------------- */
+    @Override
+    public Mono<Game> playerStand(String gameId) {
+        return AuthUtils.getCurrentUserName()
+                .flatMap(currentUser ->
+                        findGameOr404(gameId)
+                                .flatMap(game -> requireOwnership(game, currentUser))
+                                .flatMap(game -> {
+                                    Deck deck = game.getDeck();
+                                    // Dealer roba hasta tener al menos 17
+                                    while (handService.calculatePoints(game.getDealerHand()) < 17) {
+                                        Card card = deckService.drawCard(deck);
+                                        handService.addCardToHand(game.getDealerHand(), card);
+                                    }
+
+                                    int playerPoints = handService.calculatePoints(game.getPlayerHand());
+                                    int dealerPoints = handService.calculatePoints(game.getDealerHand());
+
+                                    game.setPlayerPoints(playerPoints);
+                                    game.setDealerPoints(dealerPoints);
+                                    game.setGameStatus(GameStatus.FINISHED);
+
+                                    GameResult result = determineResult(playerPoints, dealerPoints);
+                                    game.setGameResult(result);
+
+                                    return gameRepository.save(game)
+                                            .flatMap(savedGame ->
+                                                    playerService.updateStats(savedGame.getUserName(), result)
+                                                            .thenReturn(savedGame)
+                                            );
+                                })
+                );
+    }
+
+    /* -------------------------------------------------------------------------
+     * Lógica común para determinar el resultado al finalizar
+     * ---------------------------------------------------------------------- */
     private GameResult determineResult(int playerPoints, int dealerPoints) {
         if (playerPoints > 21) {
             return GameResult.DEALER_WIN;
@@ -218,5 +216,4 @@ public class GameServiceImpl implements GameService {
             return GameResult.TIE;
         }
     }
-
 }
