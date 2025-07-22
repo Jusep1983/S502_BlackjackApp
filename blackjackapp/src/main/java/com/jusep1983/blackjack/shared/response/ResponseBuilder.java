@@ -32,7 +32,7 @@ public class ResponseBuilder {
     }
 
     // Generic method for errors
-    private static ResponseEntity<MyApiResponse<ErrorResponse>> error(HttpStatus status, String path, String message) {
+    public static ResponseEntity<MyApiResponse<ErrorResponse>> error(HttpStatus status, String path, String message) {
         ErrorResponse error = new ErrorResponse(status.value(), message, path, LocalDateTime.now());
         return ResponseEntity.status(status)
                 .body(new MyApiResponse<>(status.value(), status.getReasonPhrase(), error));

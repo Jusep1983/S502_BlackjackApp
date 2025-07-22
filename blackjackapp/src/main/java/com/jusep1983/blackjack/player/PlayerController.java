@@ -2,6 +2,7 @@ package com.jusep1983.blackjack.player;
 
 import com.jusep1983.blackjack.player.dto.CreatePlayerDTO;
 import com.jusep1983.blackjack.player.dto.PlayerRankingDTO;
+import com.jusep1983.blackjack.player.dto.PlayerWithGamesDTO;
 import com.jusep1983.blackjack.player.dto.UpdateAliasDTO;
 import com.jusep1983.blackjack.shared.response.MyApiResponse;
 import com.jusep1983.blackjack.shared.response.ResponseBuilder;
@@ -87,17 +88,6 @@ public class PlayerController {
         this.playerService = playerService;
     }
 
-    @PostMapping("/new")
-    @Operation(summary = "Create a new player")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Player created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid input"),
-            @ApiResponse(responseCode = "500", description = "Server error")
-    })
-    public Mono<ResponseEntity<MyApiResponse<Player>>> createPlayer(@Valid @RequestBody CreatePlayerDTO dto) {
-        return playerService.createPlayer(dto)
-                .map(player -> ResponseBuilder.created("Player created", player));
-    }
 
     @PutMapping("/updateAlias")
     @Operation(summary = "Update alias of the current authenticated player")
@@ -113,15 +103,15 @@ public class PlayerController {
     }
 
     @GetMapping("/me")
-    @Operation(summary = "Get information of the authenticated player")
+    @Operation(summary = "Get information of the authenticated player, including their games")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Player retrieved successfully"),
+            @ApiResponse(responseCode = "200", description = "Player with games retrieved successfully"),
             @ApiResponse(responseCode = "401", description = "Unauthorized"),
             @ApiResponse(responseCode = "404", description = "Player not found")
     })
-    public Mono<ResponseEntity<MyApiResponse<Player>>> getCurrentPlayer() {
-        return playerService.getCurrentPlayer()
-                .map(player -> ResponseBuilder.ok("Player loaded", player));
+    public Mono<ResponseEntity<MyApiResponse<PlayerWithGamesDTO>>> getCurrentPlayer() {
+        return playerService.getCurrentPlayerWithGames()
+                .map(dto -> ResponseBuilder.ok("Player with games loaded", dto));
     }
 
     @GetMapping("/ranking")
@@ -137,4 +127,5 @@ public class PlayerController {
                 .map(ranking -> ResponseBuilder.ok("Ranking loaded", ranking));
     }
 }
+
 

@@ -1,7 +1,10 @@
 package com.jusep1983.blackjack.player;
 
+import com.jusep1983.blackjack.game.GameRepository;
 import com.jusep1983.blackjack.player.dto.CreatePlayerDTO;
+import com.jusep1983.blackjack.player.dto.GameSummaryDTO;
 import com.jusep1983.blackjack.player.dto.PlayerRankingDTO;
+import com.jusep1983.blackjack.player.dto.PlayerWithGamesDTO;
 import com.jusep1983.blackjack.shared.enums.GameResult;
 import com.jusep1983.blackjack.shared.enums.Role;
 import com.jusep1983.blackjack.shared.exception.FieldEmptyException;
@@ -21,10 +24,12 @@ import java.time.LocalDateTime;
 public class PlayerServiceImpl implements PlayerService {
     private final PlayerRepository playerRepository;
     private final PasswordEncoder passwordEncoder;
+    private final GameRepository gameRepository;
 
-    public PlayerServiceImpl(PlayerRepository playerRepository, PasswordEncoder passwordEncoder) {
+    public PlayerServiceImpl(PlayerRepository playerRepository, PasswordEncoder passwordEncoder,GameRepository gameRepository) {
         this.playerRepository = playerRepository;
         this.passwordEncoder = passwordEncoder;
+        this.gameRepository = gameRepository;
     }
 
     @Override
@@ -129,5 +134,32 @@ public class PlayerServiceImpl implements PlayerService {
                         tuple.getT1().intValue() + 1, tuple.getT2()
                 ));
     }
+
+    @Override
+    public Mono<PlayerWithGamesDTO> getCurrentPlayerWithGames() {
+        return getCurrentPlayer()
+                .flatMap(player ->
+                        gameRepository.findAllByUserNameOrderByCreatedAtAsc(player.getUserName())
+                                .index()
+                                .map(tuple -> new GameSummaryDTO(
+                                        tuple.getT1().intValue() + 1,     // número de partida (1-based)
+                                        tuple.getT2().getId(),
+                                        tuple.getT2().getGameStatus(),
+                                        tuple.getT2().getGameResult(),
+                                        tuple.getT2().getCreatedAt()
+                                ))
+                                .collectList()
+                                .map(gameSummaries -> new PlayerWithGamesDTO(
+                                        player.getUserName(),
+                                        player.getAlias(),
+                                        player.getGamesPlayed(),
+                                        player.getGamesWon(),
+                                        player.getGamesLost(),
+                                        player.getGamesTied(),
+                                        gameSummaries
+                                ))
+                );
+    }
+
 
 }
