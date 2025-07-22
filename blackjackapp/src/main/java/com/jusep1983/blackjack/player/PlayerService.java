@@ -10,8 +10,9 @@ public interface PlayerService {
 
     Mono<Player> getById(long id);
     Mono<Player> createPlayer(CreatePlayerDTO createPlayerDTO);
-    Mono<Player> updateName(Long id, String newName);
+    Mono<Player> updateAlias(String newAlias);
     Mono<Player> getByName(String name);
+    Mono<Player> getCurrentPlayer();
     Mono<Player> updateStats(String playerName, GameResult gameResult);
     Flux<PlayerRankingDTO> getRanking();
 }

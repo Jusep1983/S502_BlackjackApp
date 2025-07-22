@@ -5,14 +5,9 @@ import com.jusep1983.blackjack.shared.response.MyApiResponse;
 import com.jusep1983.blackjack.shared.response.ResponseBuilder;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
@@ -94,7 +89,7 @@ public class GameController {
     @ApiResponse(responseCode = "204", description = "Game deleted")
     @ApiResponse(responseCode = "404", description = "Game not found")
     @ApiResponse(responseCode = "403", description = "Access denied")
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id}/delete")
     public Mono<ResponseEntity<MyApiResponse<Void>>> deleteGame(@PathVariable String id) {
         return gameService.deleteGameById(id)
                 .thenReturn(ResponseBuilder.ok("Game deleted", null));

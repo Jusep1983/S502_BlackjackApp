@@ -7,6 +7,7 @@ import com.jusep1983.blackjack.shared.enums.Role;
 import com.jusep1983.blackjack.shared.exception.FieldEmptyException;
 import com.jusep1983.blackjack.shared.exception.PlayerNotFoundException;
 import com.jusep1983.blackjack.shared.exception.UsernameAlreadyExistsException;
+import com.jusep1983.blackjack.shared.utils.AuthUtils;
 import lombok.Data;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,7 +22,7 @@ public class PlayerServiceImpl implements PlayerService {
     private final PlayerRepository playerRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public PlayerServiceImpl(PlayerRepository playerRepository,PasswordEncoder passwordEncoder) {
+    public PlayerServiceImpl(PlayerRepository playerRepository, PasswordEncoder passwordEncoder) {
         this.playerRepository = playerRepository;
         this.passwordEncoder = passwordEncoder;
     }
@@ -54,14 +55,32 @@ public class PlayerServiceImpl implements PlayerService {
         return playerRepository.save(newPlayer);
     }
 
+    //    @Override
+//    public Mono<Player> updateName(Long id, String newName) {
+//        return playerRepository.findById(id)
+//                .switchIfEmpty(Mono.error(new PlayerNotFoundException("Player not found with id: " + id)))
+//                .flatMap(player -> {
+//                    player.setUserName(newName.trim());
+//                    return playerRepository.save(player);
+//                });
+//    }
     @Override
-    public Mono<Player> updateName(Long id, String newName) {
-        return playerRepository.findById(id)
-                .switchIfEmpty(Mono.error(new PlayerNotFoundException("Player not found with id: " + id)))
-                .flatMap(player -> {
-                    player.setUserName(newName.trim());
-                    return playerRepository.save(player);
-                });
+    public Mono<Player> updateAlias(String newAlias) {
+        if (newAlias == null || newAlias.trim().isEmpty()) {
+            return Mono.error(new FieldEmptyException("Alias cannot be empty"));
+        }
+
+        String trimmedAlias = newAlias.trim();
+
+        return AuthUtils.getCurrentUserName()
+                .flatMap(userName ->
+                        playerRepository.findByUserName(userName)
+                                .switchIfEmpty(Mono.error(new PlayerNotFoundException("Player not found: " + userName)))
+                                .flatMap(player -> {
+                                    player.setAlias(trimmedAlias);
+                                    return playerRepository.save(player);
+                                })
+                );
     }
 
     @Override
@@ -74,6 +93,13 @@ public class PlayerServiceImpl implements PlayerService {
     public Mono<Player> getByName(String name) {
         return playerRepository.findByUserName(name)
                 .switchIfEmpty(Mono.empty());
+    }
+
+    @Override
+    public Mono<Player> getCurrentPlayer() {
+        return AuthUtils.getCurrentUserName()
+                .flatMap(userName -> playerRepository.findByUserName(userName)
+                        .switchIfEmpty(Mono.error(new PlayerNotFoundException("Player not found: " + userName))));
     }
 
     @Override

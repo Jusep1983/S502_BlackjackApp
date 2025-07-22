@@ -71,23 +71,7 @@ public class GameServiceImpl implements GameService {
                                     handService.addCardToHand(game.getDealerHand(), deckService.drawCard(deck));
                                     handService.addCardToHand(game.getDealerHand(), deckService.drawCard(deck));
                                     // Calcular puntos iniciales
-                                    int playerPoints = handService.calculatePoints(game.getPlayerHand());
-                                    int dealerPoints = handService.calculatePoints(game.getDealerHand());
-                                    game.setPlayerPoints(playerPoints);
-                                    game.setDealerPoints(dealerPoints);
-                                    // Estado inicial: IN_PROGRESS salvo blackjack instantáneo
-                                    if (playerPoints == 21 && dealerPoints != 21) {
-                                        game.setGameStatus(GameStatus.FINISHED);
-                                        game.setGameResult(GameResult.PLAYER_WIN);
-                                    } else if (dealerPoints == 21 && playerPoints != 21) {
-                                        game.setGameStatus(GameStatus.FINISHED);
-                                        game.setGameResult(GameResult.DEALER_WIN);
-                                    } else if (dealerPoints == 21 && playerPoints == 21) {
-                                        game.setGameStatus(GameStatus.FINISHED);
-                                        game.setGameResult(GameResult.TIE);
-                                    } else {
-                                        game.setGameStatus(GameStatus.IN_PROGRESS);
-                                    }
+                                    evaluateInitStatus(game);
                                     return gameRepository.save(game)
                                             .flatMap(saved -> {
                                                 // Si la partida terminó instantáneamente (blackjack), actualizamos stats
@@ -99,6 +83,29 @@ public class GameServiceImpl implements GameService {
                                             });
                                 })
                 );
+    }
+
+    /* -------------------------------------------------------------------------
+     * Calcular estado inicial de partida
+     * ---------------------------------------------------------------------- */
+    private void evaluateInitStatus(Game game) {
+        int playerPoints = handService.calculatePoints(game.getPlayerHand());
+        int dealerPoints = handService.calculatePoints(game.getDealerHand());
+        game.setPlayerPoints(playerPoints);
+        game.setDealerPoints(dealerPoints);
+
+        if (playerPoints == 21 && dealerPoints != 21) {
+            game.setGameStatus(GameStatus.FINISHED);
+            game.setGameResult(GameResult.PLAYER_WIN);
+        } else if (dealerPoints == 21 && playerPoints != 21) {
+            game.setGameStatus(GameStatus.FINISHED);
+            game.setGameResult(GameResult.DEALER_WIN);
+        } else if (dealerPoints == 21 && playerPoints == 21) {
+            game.setGameStatus(GameStatus.FINISHED);
+            game.setGameResult(GameResult.TIE);
+        } else {
+            game.setGameStatus(GameStatus.IN_PROGRESS);
+        }
     }
 
     /* -------------------------------------------------------------------------
