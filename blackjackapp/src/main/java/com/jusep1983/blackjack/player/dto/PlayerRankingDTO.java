@@ -35,8 +35,7 @@ public class PlayerRankingDTO {
         this.gamesTied = player.getGamesTied();
         double porcentaje = gamesPlayed > 0 ? (gamesWon * 100.0) / gamesPlayed : 0.0;
         this.winPercentage = new BigDecimal(porcentaje)
-                                     .setScale(2, RoundingMode.HALF_UP)
-                                     .toString() + "%";
+                                     .setScale(2, RoundingMode.HALF_UP) + "%";
     }
 
 }

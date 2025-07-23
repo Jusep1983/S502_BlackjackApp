@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.LocalDateTime;
 
@@ -23,6 +24,7 @@ public class Game {
     @Schema(description = "Unique identifier of the game", example = "123456789abcdef")
     private String id;
     @Schema(description = "Name of the player", example = "Pasqual")
+    @Field("userName")
     private String userName;
     @Schema(description = "Current status of the game", example = "NEW")
     private GameStatus gameStatus = GameStatus.NO_STATUS;

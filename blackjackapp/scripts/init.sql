@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS players (
 );
 
 INSERT INTO players (user_name, alias, password, role, games_played, games_won, games_lost, games_tied) VALUES
-('Jose', 'Jose', '$2a$10$2waTUSY3jb057ce95ZaBb.SqSzY4zcs1aESzKskZBkjLgFEqiB', 'ADMIN', 10, 2, 7, 1),
-('Rakel', 'Rakel', '$2a$10$2waTUSY3jb057ce95ZaBb.SqSzY4zcs1aESzKskZBkjLgFEqiB', 'USER', 5, 3, 1, 0),
-('Valeria', 'Valeria', '$2a$10$2waTUSY3jb057ce95ZaBb.SqSzY4zcs1aESzKskZBkjLgFEqiB', 'USER', 8, 5, 2, 1),
-('Nerea', 'Nerea', '$2a$10$2waTUSY3jb057ce95ZaBb.SqSzY4zcs1aESzKskZBkjLgFEqiB', 'USER', 8, 5, 3, 0);
+('Jose', 'Jose', '$2a$10$2waTUSY3jb057ce95ZaBb.SqSzY4zcs1aESzKskZBkjLgFEqiB', 'SUPER_USER', 0, 0, 0, 0),
+('Rakel', 'Rakel', '$2a$10$2waTUSY3jb057ce95ZaBb.SqSzY4zcs1aESzKskZBkjLgFEqiB', 'ADMIN', 0, 0, 0, 0),
+('Valeria', 'Valeria', '$2a$10$2waTUSY3jb057ce95ZaBb.SqSzY4zcs1aESzKskZBkjLgFEqiB', 'USER', 0, 0, 0, 0),
+('Nerea', 'Nerea', '$2a$10$2waTUSY3jb057ce95ZaBb.SqSzY4zcs1aESzKskZBkjLgFEqiB', 'USER', 0, 0, 0, 0);

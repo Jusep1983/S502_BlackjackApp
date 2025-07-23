@@ -31,6 +31,8 @@ public class SecurityConfig {
                         .pathMatchers("/auth/**").permitAll()
                         .pathMatchers(HttpMethod.GET, "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .pathMatchers("/", "/index.html", "/style.css", "/script.js", "/favicon.ico").permitAll()
+                        .pathMatchers(HttpMethod.PATCH, "/player/set-role/**").hasRole("SUPER_USER")
+                        .pathMatchers(HttpMethod.DELETE, "/admin/delete-player/**").hasAnyRole("ADMIN", "SUPER_USER")
                         .anyExchange().authenticated()
                 )
                 .build();

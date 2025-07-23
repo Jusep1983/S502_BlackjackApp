@@ -82,8 +82,8 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     @Override
-    public Mono<Player> getByName(String name) {
-        return playerRepository.findByUserName(name)
+    public Mono<Player> getByName(String userName) {
+        return playerRepository.findByUserName(userName)
                 .switchIfEmpty(Mono.empty());
     }
 
@@ -141,4 +141,6 @@ public class PlayerServiceImpl implements PlayerService {
                 );
     }
 
+
 }
+

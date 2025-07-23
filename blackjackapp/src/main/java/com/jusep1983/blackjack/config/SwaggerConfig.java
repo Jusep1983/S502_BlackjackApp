@@ -9,12 +9,13 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.examples.Example;
 import io.swagger.v3.oas.models.media.*;
 import io.swagger.v3.oas.models.responses.ApiResponse;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @OpenAPIDefinition(
-        info = @Info(title = "Blackjack API", version = "1.0", description = "API para jugar al Blackjack")
+        info = @Info(title = "Blackjack APPI", version = "1.0", description = "API para jugar al Blackjack")
 )
 @SecurityScheme(
         name = "bearerAuth",
@@ -37,8 +38,8 @@ public class SwaggerConfig {
                 .value("{\"status\":400,\"message\":\"Invalid player name\",\"data\":null}");
 
         return new OpenAPI()
+                .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
                 .components(new Components()
-
                         // Error 500 reutilizable
                         .addResponses("InternalServerError", new ApiResponse()
                                 .description("Internal server error")
