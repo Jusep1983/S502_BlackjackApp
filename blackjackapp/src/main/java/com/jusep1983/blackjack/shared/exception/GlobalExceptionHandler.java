@@ -3,6 +3,7 @@ package com.jusep1983.blackjack.shared.exception;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.jusep1983.blackjack.shared.response.ErrorResponse;
 import com.jusep1983.blackjack.shared.response.MyApiResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -15,6 +16,7 @@ import reactor.core.publisher.Mono;
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -32,6 +34,7 @@ public class GlobalExceptionHandler {
             PlayerNotFoundException.class
     })
     public Mono<ResponseEntity<MyApiResponse<ErrorResponse>>> handleNotFound(RuntimeException ex, ServerHttpRequest request) {
+        log.warn("Not found: {} - {}", ex.getClass().getSimpleName(), ex.getMessage());
         return response(HttpStatus.NOT_FOUND, ex.getMessage(), request);
     }
 
@@ -41,21 +44,25 @@ public class GlobalExceptionHandler {
             GameAlreadyFinishedException.class
     })
     public Mono<ResponseEntity<MyApiResponse<ErrorResponse>>> handleConflict(RuntimeException ex, ServerHttpRequest request) {
+        log.warn("Conflict: {} - {}", ex.getClass().getSimpleName(), ex.getMessage());
         return response(HttpStatus.CONFLICT, ex.getMessage(), request);
     }
 
     @ExceptionHandler(UnauthorizedGameAccessException.class)
     public Mono<ResponseEntity<MyApiResponse<ErrorResponse>>> handleForbidden(UnauthorizedGameAccessException ex, ServerHttpRequest request) {
+        log.warn("Unauthorized game access: {}", ex.getMessage());
         return response(HttpStatus.FORBIDDEN, ex.getMessage(), request);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public Mono<ResponseEntity<MyApiResponse<ErrorResponse>>> handleAccessDenied(AccessDeniedException ex, ServerHttpRequest request) {
+        log.warn("Access denied: {}", ex.getMessage());
         return response(HttpStatus.FORBIDDEN, ex.getMessage(), request);
     }
 
     @ExceptionHandler(JWTVerificationException.class)
     public Mono<ResponseEntity<MyApiResponse<ErrorResponse>>> handleJwt(JWTVerificationException ex, ServerHttpRequest request) {
+        log.warn("JWT verification failed: {}", ex.getMessage());
         return response(HttpStatus.UNAUTHORIZED, "Invalid or expired token", request);
     }
 
@@ -64,12 +71,19 @@ public class GlobalExceptionHandler {
         String message = ex.getFieldErrors().stream()
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
                 .collect(Collectors.joining("; "));
+        log.warn("Validation failed: {}", message);
         return response(HttpStatus.BAD_REQUEST, "Validation failed: " + message, request);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public Mono<ResponseEntity<MyApiResponse<ErrorResponse>>> handleIllegalArgument(IllegalArgumentException ex, ServerHttpRequest request) {
+        log.error("Illegal argument: {}", ex.getMessage());
+        return response(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
     }
 
     @ExceptionHandler(Exception.class)
     public Mono<ResponseEntity<MyApiResponse<ErrorResponse>>> handleGeneral(Exception ex, ServerHttpRequest request) {
-        ex.printStackTrace();
+        log.error("Unexpected error: {}", ex.getMessage(), ex);
         return response(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), request);
     }
 
