@@ -27,17 +27,17 @@ public class AdminController {
 
 
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_USER')")
-    @DeleteMapping("/delete-player/{playerId}")
-    public Mono<ResponseEntity<MyApiResponse<String>>> deletePlayer(@PathVariable String playerId) {
-        return adminService.deletePlayerAndGames(playerId)
-                .thenReturn(ResponseBuilder.ok("Player and related games deleted successfully",null));
-    }
-
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_USER')")
     @DeleteMapping("/delete-player/by-username/{userName}")
     public Mono<ResponseEntity<MyApiResponse<String>>> deletePlayerByUserName(@PathVariable String userName) {
         return adminService.deletePlayerAndGames(userName)
                 .thenReturn(ResponseBuilder.ok("Player and related games deleted successfully",null));
     }
-}
 
+//    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_USER')")
+//    @DeleteMapping("/delete-player/{playerId}")
+//    public Mono<ResponseEntity<MyApiResponse<String>>> deletePlayer(@PathVariable String playerId) {
+//        return adminService.deletePlayerAndGames(playerId)
+//                .thenReturn(ResponseBuilder.ok("Player and related games deleted successfully",null));
+//    }
+
+}
