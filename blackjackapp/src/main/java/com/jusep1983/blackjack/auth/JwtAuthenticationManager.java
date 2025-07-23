@@ -4,6 +4,7 @@ import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.SignatureVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -14,13 +15,14 @@ import reactor.core.publisher.Mono;
 
 import java.util.Collections;
 
+@Slf4j
 @Component
 public class JwtAuthenticationManager implements ReactiveAuthenticationManager {
-    private final JwtService jwtService;
+    private final AuthService authService;
 
     @Autowired
-    public JwtAuthenticationManager(JwtService jwtService) {
-        this.jwtService = jwtService;
+    public JwtAuthenticationManager(AuthService authService) {
+        this.authService = authService;
     }
 
     @Override
@@ -28,8 +30,9 @@ public class JwtAuthenticationManager implements ReactiveAuthenticationManager {
         String token = authentication.getCredentials().toString();
         // Aquí usamos el JwtService para validar el token y extraer info
         try {
-            String userName = jwtService.validateTokenAndGetUsername(token);
-            String role = String.valueOf(jwtService.getRoleFromToken(token));
+            String userName = authService.validateTokenAndGetUserName(token);
+            String role = String.valueOf(authService.getRoleFromToken(token));
+            log.debug("Token validated successfully for user '{}'", userName);
             // Creamos un Authentication válido con el userName y rol
             return Mono.just(
                     new UsernamePasswordAuthenticationToken(
@@ -39,13 +42,13 @@ public class JwtAuthenticationManager implements ReactiveAuthenticationManager {
                     )
             );
         } catch (TokenExpiredException ex) {
-            System.out.println("Token expired: " + ex.getMessage());
+            log.warn("Token expired: {}", ex.getMessage());
         } catch (SignatureVerificationException ex) {
-            System.out.println("Invalid token signature: " + ex.getMessage());
+            log.warn("Invalid token signature: {}", ex.getMessage());
         } catch (JWTDecodeException ex) {
-            System.out.println("Malformed token: " + ex.getMessage());
+            log.warn("Malformed token: {}", ex.getMessage());
         } catch (JWTVerificationException ex) {
-            System.out.println("JWT verification failed: " + ex.getMessage());
+            log.warn("JWT verification failed: {}", ex.getMessage());
         }
         return Mono.empty();
     }

@@ -29,7 +29,7 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class AuthController {
     private final PlayerRepository playerRepository;
-    private final JwtService jwtService;
+    private final AuthService authService;
     private final PasswordEncoder passwordEncoder;
 
     @Operation(summary = "Register a new player (public)")
@@ -60,7 +60,7 @@ public class AuthController {
 
                             return playerRepository.save(newPlayer)
                                     .map(saved -> {
-                                        String token = jwtService.generateToken(
+                                        String token = authService.generateToken(
                                                 saved.getUserName(), saved.getRole()
                                         );
                                         log.info("Player '{}' registered successfully", saved.getUserName());
@@ -83,7 +83,7 @@ public class AuthController {
                 .filter(player -> passwordEncoder.matches(request.getPassword(), player.getPassword()))
                 .map(validPlayer -> {
                     log.info("Login successful for user '{}'", validPlayer.getUserName());
-                    String token = jwtService.generateToken(validPlayer.getUserName(), Role.valueOf(validPlayer.getRole().name()));
+                    String token = authService.generateToken(validPlayer.getUserName(), Role.valueOf(validPlayer.getRole().name()));
                     return ResponseEntity.ok(new MyApiResponse<>(200, "Login successful", new AuthResponse(token)));
                 })
                 .switchIfEmpty(Mono.defer(() -> {
