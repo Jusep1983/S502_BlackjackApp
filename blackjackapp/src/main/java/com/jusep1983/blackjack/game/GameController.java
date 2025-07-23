@@ -94,4 +94,5 @@ public class GameController {
         return gameService.deleteGameById(id)
                 .thenReturn(ResponseBuilder.ok("Game deleted", null));
     }
+
 }

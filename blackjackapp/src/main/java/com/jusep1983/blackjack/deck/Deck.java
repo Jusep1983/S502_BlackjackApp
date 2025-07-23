@@ -11,9 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Deck {
-
     private List<Card> cards = new ArrayList<>();
-
 
     public int size() {
         return cards.size();
@@ -33,5 +31,5 @@ public class Deck {
     public void shuffle() {
         Collections.shuffle(cards);
     }
-}
 
+}

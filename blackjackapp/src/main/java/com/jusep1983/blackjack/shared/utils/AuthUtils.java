@@ -10,7 +10,6 @@ import reactor.core.publisher.Mono;
 
 public class AuthUtils {
     private AuthUtils() {
-
     }
 
     public static Mono<String> getCurrentUserName() {
@@ -26,4 +25,5 @@ public class AuthUtils {
                                 .switchIfEmpty(Mono.error(new PlayerNotFoundException("Player not found: " + userName)))
                 );
     }
+
 }

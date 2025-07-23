@@ -32,7 +32,6 @@ public class DeckServiceImpl implements DeckService {
         Collections.shuffle(deck.getCards());
     }
 
-
     @Override
     public Card drawCard(Deck deck) {
         if (deck.getCards().isEmpty()) {
@@ -40,4 +39,5 @@ public class DeckServiceImpl implements DeckService {
         }
         return deck.getCards().remove(0);
     }
+
 }

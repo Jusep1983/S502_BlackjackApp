@@ -18,4 +18,3 @@ public class R2dbcConfig {
         );
     }
 }
-

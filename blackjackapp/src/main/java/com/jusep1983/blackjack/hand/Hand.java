@@ -12,9 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Hand {
-
     private List<Card> cards = new ArrayList<>();
-
 
     public void addCard(Card card) {
         cards.add(card);
@@ -29,8 +27,6 @@ public class Hand {
     }
 
     public int getPoints() {
-        // Aquí puedes poner la lógica para calcular puntos en blackjack,
-        // teniendo en cuenta Ases, figuras, etc.
         int total = 0;
         int aces = 0;
 
@@ -41,7 +37,6 @@ public class Hand {
             }
             total += cardValue;
         }
-
         // Ajuste por Ases: un As puede valer 1 o 11
         while (total > 21 && aces > 0) {
             total -= 10; // Cambio As de 11 a 1
@@ -53,6 +48,5 @@ public class Hand {
     public void clear() {
         cards.clear();
     }
+
 }
-
-

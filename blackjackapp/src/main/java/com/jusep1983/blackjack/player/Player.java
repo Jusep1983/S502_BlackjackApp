@@ -1,6 +1,5 @@
 package com.jusep1983.blackjack.player;
 
-
 import com.jusep1983.blackjack.shared.enums.Role;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;

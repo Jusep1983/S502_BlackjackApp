@@ -72,5 +72,5 @@ public class GlobalExceptionHandler {
         ex.printStackTrace();
         return response(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), request);
     }
-}
 
+}

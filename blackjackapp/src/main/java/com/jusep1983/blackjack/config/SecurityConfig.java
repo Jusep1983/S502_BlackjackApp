@@ -16,7 +16,6 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 @EnableReactiveMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-
     private final JwtAuthenticationManager authenticationManager;
     private final JwtSecurityContextRepository securityContextRepository;
 

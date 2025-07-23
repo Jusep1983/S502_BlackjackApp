@@ -28,10 +28,6 @@ public class GameServiceImpl implements GameService {
     private final HandService handService;
     private final PlayerService playerService;
 
-    /* -------------------------------------------------------------------------
-     * Helpers privados
-     * ---------------------------------------------------------------------- */
-
     private Mono<Game> requireOwnership(Game game, String currentUser) {
         if (!game.getUserName().equals(currentUser)) {
             return Mono.error(new UnauthorizedGameAccessException("This is not your game"));
@@ -44,9 +40,6 @@ public class GameServiceImpl implements GameService {
                 .switchIfEmpty(Mono.error(new GameNotFoundException("Game not found with id: " + id)));
     }
 
-    /* -------------------------------------------------------------------------
-     * Crear partida
-     * ---------------------------------------------------------------------- */
     @Override
     public Mono<Game> createGame() {
         return AuthUtils.getCurrentUserName()
@@ -85,9 +78,6 @@ public class GameServiceImpl implements GameService {
                 );
     }
 
-    /* -------------------------------------------------------------------------
-     * Calcular estado inicial de partida
-     * ---------------------------------------------------------------------- */
     private void evaluateInitStatus(Game game) {
         int playerPoints = handService.calculatePoints(game.getPlayerHand());
         int dealerPoints = handService.calculatePoints(game.getDealerHand());
@@ -108,9 +98,6 @@ public class GameServiceImpl implements GameService {
         }
     }
 
-    /* -------------------------------------------------------------------------
-     * Obtener partida por ID
-     * ---------------------------------------------------------------------- */
     @Override
     public Mono<Game> getGameById(String id) {
         return AuthUtils.getCurrentUserName()
@@ -120,9 +107,6 @@ public class GameServiceImpl implements GameService {
                 );
     }
 
-    /* -------------------------------------------------------------------------
-     * Eliminar partida
-     * ---------------------------------------------------------------------- */
     @Override
     public Mono<Void> deleteGameById(String id) {
         return AuthUtils.getCurrentUserName()
@@ -133,9 +117,6 @@ public class GameServiceImpl implements GameService {
                 );
     }
 
-    /* -------------------------------------------------------------------------
-     * Player HIT (pedir carta)
-     * ---------------------------------------------------------------------- */
     @Override
     public Mono<Game> playerHit(String gameId) {
         return AuthUtils.getCurrentUserName()
@@ -171,9 +152,6 @@ public class GameServiceImpl implements GameService {
                 );
     }
 
-    /* -------------------------------------------------------------------------
-     * Player STAND (plantarse / turno del dealer)
-     * ---------------------------------------------------------------------- */
     @Override
     public Mono<Game> playerStand(String gameId) {
         return AuthUtils.getCurrentUserName()
@@ -207,9 +185,6 @@ public class GameServiceImpl implements GameService {
                 );
     }
 
-    /* -------------------------------------------------------------------------
-     * Lógica común para determinar el resultado al finalizar
-     * ---------------------------------------------------------------------- */
     private GameResult determineResult(int playerPoints, int dealerPoints) {
         if (playerPoints > 21) {
             return GameResult.DEALER_WIN;
@@ -223,4 +198,5 @@ public class GameServiceImpl implements GameService {
             return GameResult.TIE;
         }
     }
+
 }

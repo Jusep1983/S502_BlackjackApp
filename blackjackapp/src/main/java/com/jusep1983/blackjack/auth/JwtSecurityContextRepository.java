@@ -51,5 +51,4 @@ public class JwtSecurityContextRepository implements ServerSecurityContextReposi
         return Mono.empty(); // No persistimos el contexto
     }
 
-
 }
