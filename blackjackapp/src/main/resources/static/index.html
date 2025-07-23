@@ -43,6 +43,25 @@
         <button onclick="getRanking()">Ver ranking</button>
         <ul id="rankingList"></ul>
     </section>
+    <section>
+        <h2>My Profile</h2>
+        <button onclick="getMyProfile()">Load my profile</button>
+
+        <div id="playerProfile" style="margin-top: 20px;"></div>
+        <h3>Game History</h3>
+        <table id="myGamesTable" style="width: 100%;">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>Game ID</th>
+                <th>Status</th>
+                <th>Result</th>
+                <th>Created At</th>
+            </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </section>
 </div>
 
 <script src="script.js"></script>

@@ -126,6 +126,20 @@ public class PlayerController {
                 .collectList()
                 .map(ranking -> ResponseBuilder.ok("Ranking loaded", ranking));
     }
+
+    @GetMapping("/me/games")
+    @Operation(summary = "Get current player's profile and game history")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Player profile and games retrieved successfully"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized - invalid or missing token"),
+            @ApiResponse(responseCode = "404", description = "Player not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public Mono<ResponseEntity<MyApiResponse<PlayerWithGamesDTO>>> getMyGames() {
+        return playerService.getCurrentPlayerWithGames()
+                .map(playerWithGames -> ResponseBuilder.ok("Player profile and games retrieved", playerWithGames));
+    }
+
 }
 
 

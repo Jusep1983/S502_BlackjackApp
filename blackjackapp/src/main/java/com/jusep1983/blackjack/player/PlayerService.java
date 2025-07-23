@@ -13,7 +13,7 @@ public interface PlayerService {
     Mono<Player> createPlayer(CreatePlayerDTO createPlayerDTO);
     Mono<Player> updateAlias(String newAlias);
     Mono<Player> getByName(String name);
-    Mono<Player> getCurrentPlayer();
+//    Mono<Player> getCurrentPlayer();
     Mono<Player> updateStats(String playerName, GameResult gameResult);
     Flux<PlayerRankingDTO> getRanking();
     Mono<PlayerWithGamesDTO> getCurrentPlayerWithGames();

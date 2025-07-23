@@ -60,15 +60,6 @@ public class PlayerServiceImpl implements PlayerService {
         return playerRepository.save(newPlayer);
     }
 
-    //    @Override
-//    public Mono<Player> updateName(Long id, String newName) {
-//        return playerRepository.findById(id)
-//                .switchIfEmpty(Mono.error(new PlayerNotFoundException("Player not found with id: " + id)))
-//                .flatMap(player -> {
-//                    player.setUserName(newName.trim());
-//                    return playerRepository.save(player);
-//                });
-//    }
     @Override
     public Mono<Player> updateAlias(String newAlias) {
         if (newAlias == null || newAlias.trim().isEmpty()) {
@@ -77,15 +68,11 @@ public class PlayerServiceImpl implements PlayerService {
 
         String trimmedAlias = newAlias.trim();
 
-        return AuthUtils.getCurrentUserName()
-                .flatMap(userName ->
-                        playerRepository.findByUserName(userName)
-                                .switchIfEmpty(Mono.error(new PlayerNotFoundException("Player not found: " + userName)))
-                                .flatMap(player -> {
-                                    player.setAlias(trimmedAlias);
-                                    return playerRepository.save(player);
-                                })
-                );
+        return AuthUtils.getCurrentPlayer(playerRepository)
+                .flatMap(player -> {
+                    player.setAlias(trimmedAlias);
+                    return playerRepository.save(player);
+                });
     }
 
     @Override
@@ -98,13 +85,6 @@ public class PlayerServiceImpl implements PlayerService {
     public Mono<Player> getByName(String name) {
         return playerRepository.findByUserName(name)
                 .switchIfEmpty(Mono.empty());
-    }
-
-    @Override
-    public Mono<Player> getCurrentPlayer() {
-        return AuthUtils.getCurrentUserName()
-                .flatMap(userName -> playerRepository.findByUserName(userName)
-                        .switchIfEmpty(Mono.error(new PlayerNotFoundException("Player not found: " + userName))));
     }
 
     @Override
@@ -137,7 +117,7 @@ public class PlayerServiceImpl implements PlayerService {
 
     @Override
     public Mono<PlayerWithGamesDTO> getCurrentPlayerWithGames() {
-        return getCurrentPlayer()
+        return AuthUtils.getCurrentPlayer(playerRepository)
                 .flatMap(player ->
                         gameRepository.findAllByUserNameOrderByCreatedAtAsc(player.getUserName())
                                 .index()
@@ -160,6 +140,5 @@ public class PlayerServiceImpl implements PlayerService {
                                 ))
                 );
     }
-
 
 }

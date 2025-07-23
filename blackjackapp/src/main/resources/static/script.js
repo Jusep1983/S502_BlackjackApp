@@ -137,3 +137,50 @@ function getSuit(suit) {
     default: return suit;
   }
 }
+function getMyProfile() {
+  fetch(`${api}/player/me`, {
+    headers: {
+      "Authorization": "Bearer " + token
+    }
+  })
+    .then(res => res.json())
+    .then(data => {
+      console.log("✅ API response from /player/me:", data);
+
+//    if (data.success !== false) {
+//      alert("❌ Error: " + data.message);
+//      return;
+//    }
+
+      const player = data.data;
+
+      document.getElementById("playerProfile").innerHTML = `
+        <p><strong>User:</strong> ${player.userName}</p>
+        <p><strong>Alias:</strong> ${player.alias}</p>
+        <p><strong>Games Played:</strong> ${player.gamesPlayed}</p>
+        <p><strong>Wins:</strong> ${player.gamesWon}</p>
+        <p><strong>Losses:</strong> ${player.gamesLost}</p>
+        <p><strong>Ties:</strong> ${player.gamesTied}</p>
+      `;
+
+      const tableBody = document.querySelector("#myGamesTable tbody");
+      tableBody.innerHTML = "";
+
+      player.games.forEach(game => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${game.number}</td>
+          <td>${game.id}</td>
+          <td>${game.status}</td>
+          <td>${game.result}</td>
+          <td>${new Date(game.createdAt).toLocaleString()}</td>
+        `;
+        tableBody.appendChild(row);
+      });
+    })
+    .catch(err => {
+      console.error("💥 Fetch failed:", err);
+      alert("Could not load profile.");
+    });
+}
+
