@@ -12,13 +12,14 @@ import com.jusep1983.blackjack.shared.exception.PlayerNotFoundException;
 import com.jusep1983.blackjack.shared.exception.UsernameAlreadyExistsException;
 import com.jusep1983.blackjack.shared.utils.AuthUtils;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
-
+@Slf4j
 @Data
 @Service
 public class PlayerServiceImpl implements PlayerService {
@@ -37,13 +38,19 @@ public class PlayerServiceImpl implements PlayerService {
         String trimmedName = dto.getUserName() != null ? dto.getUserName().trim() : "";
 
         if (trimmedName.isEmpty()) {
+            log.warn("Attempt to create player with empty username");
             return Mono.error(new FieldEmptyException("Username cannot be empty or only spaces"));
         }
+
         return playerRepository.findByUserName(trimmedName)
-                .flatMap(existing -> Mono.<Player>error(
-                        new UsernameAlreadyExistsException("Username already taken: " + trimmedName)
-                ))
-                .switchIfEmpty(createAndSaveNewPlayer(dto, trimmedName));
+                .flatMap(existing -> {
+                    log.warn("Username already taken: '{}'", trimmedName);
+                    return Mono.<Player>error(new UsernameAlreadyExistsException("Username already taken: " + trimmedName));
+                })
+                .switchIfEmpty(createAndSaveNewPlayer(dto, trimmedName)
+                        .doOnSuccess(p -> log.info("New player '{}' successfully created", p.getUserName()))
+                        .doOnError(e -> log.error("Error creating player '{}': {}", trimmedName, e.getMessage()))
+                );
     }
 
     private Mono<Player> createAndSaveNewPlayer(CreatePlayerDTO dto, String trimmedName) {
@@ -63,37 +70,47 @@ public class PlayerServiceImpl implements PlayerService {
     @Override
     public Mono<Player> updateAlias(String newAlias) {
         if (newAlias == null || newAlias.trim().isEmpty()) {
+            log.warn("Attempt to update alias with empty value");
             return Mono.error(new FieldEmptyException("Alias cannot be empty"));
         }
-
         String trimmedAlias = newAlias.trim();
-
         return AuthUtils.getCurrentPlayer(playerRepository)
                 .flatMap(player -> {
+                    log.info("Updating alias for player '{}'", player.getUserName());
                     player.setAlias(trimmedAlias);
-                    return playerRepository.save(player);
+                    return playerRepository.save(player)
+                            .doOnSuccess(p -> log.info("Alias updated to '{}' for player '{}'", trimmedAlias, player.getUserName()))
+                            .doOnError(e -> log.error("Failed to update alias for '{}': {}", player.getUserName(), e.getMessage()));
                 });
     }
 
     @Override
     public Mono<Player> getById(long id) {
+        log.debug("Fetching player by ID: {}", id);
         return playerRepository.findById(id)
-                .switchIfEmpty(Mono.error(new PlayerNotFoundException("Player not found with id: " + id)));
+                .switchIfEmpty(Mono.defer(() -> {
+                    log.warn("Player not found with ID: {}", id);
+                    return Mono.error(new PlayerNotFoundException("Player not found with id: " + id));
+                }));
     }
 
     @Override
     public Mono<Player> getByName(String userName) {
+        log.debug("Fetching player by username: '{}'", userName);
         return playerRepository.findByUserName(userName)
                 .switchIfEmpty(Mono.empty());
     }
 
     @Override
     public Mono<Player> updateStats(String playerName, GameResult result) {
+        log.info("Updating stats for player '{}', result: {}", playerName, result);
         return getByName(playerName)
                 .flatMap(player -> {
                     player.setGamesPlayed(player.getGamesPlayed() + 1);
                     updatePlayerStats(player, result);
-                    return playerRepository.save(player);
+                    return playerRepository.save(player)
+                            .doOnSuccess(p -> log.debug("Stats updated for player '{}'", playerName))
+                            .doOnError(e -> log.error("Failed to update stats for '{}': {}", playerName, e.getMessage()));
                 });
     }
 
@@ -108,8 +125,9 @@ public class PlayerServiceImpl implements PlayerService {
 
     @Override
     public Flux<PlayerRankingDTO> getRanking() {
+        log.info("Fetching player ranking");
         return playerRepository.findAllByOrderByGamesWonDesc()
-                .index() // añade índice (posición 0-based)
+                .index()
                 .map(tuple -> new PlayerRankingDTO(
                         tuple.getT1().intValue() + 1, tuple.getT2()
                 ));
@@ -118,29 +136,28 @@ public class PlayerServiceImpl implements PlayerService {
     @Override
     public Mono<PlayerWithGamesDTO> getCurrentPlayerWithGames() {
         return AuthUtils.getCurrentPlayer(playerRepository)
-                .flatMap(player ->
-                        gameRepository.findAllByUserNameOrderByCreatedAtAsc(player.getUserName())
-                                .index()
-                                .map(tuple -> new GameSummaryDTO(
-                                        tuple.getT1().intValue() + 1,     // número de partida (1-based)
-                                        tuple.getT2().getId(),
-                                        tuple.getT2().getGameStatus(),
-                                        tuple.getT2().getGameResult(),
-                                        tuple.getT2().getCreatedAt()
-                                ))
-                                .collectList()
-                                .map(gameSummaries -> new PlayerWithGamesDTO(
-                                        player.getUserName(),
-                                        player.getAlias(),
-                                        player.getGamesPlayed(),
-                                        player.getGamesWon(),
-                                        player.getGamesLost(),
-                                        player.getGamesTied(),
-                                        gameSummaries
-                                ))
-                );
+                .flatMap(player -> {
+                    log.info("Fetching game history for player '{}'", player.getUserName());
+                    return gameRepository.findAllByUserNameOrderByCreatedAtAsc(player.getUserName())
+                            .index()
+                            .map(tuple -> new GameSummaryDTO(
+                                    tuple.getT1().intValue() + 1,
+                                    tuple.getT2().getId(),
+                                    tuple.getT2().getGameStatus(),
+                                    tuple.getT2().getGameResult(),
+                                    tuple.getT2().getCreatedAt()
+                            ))
+                            .collectList()
+                            .map(gameSummaries -> new PlayerWithGamesDTO(
+                                    player.getUserName(),
+                                    player.getAlias(),
+                                    player.getGamesPlayed(),
+                                    player.getGamesWon(),
+                                    player.getGamesLost(),
+                                    player.getGamesTied(),
+                                    gameSummaries
+                            ));
+                });
     }
 
-
 }
-

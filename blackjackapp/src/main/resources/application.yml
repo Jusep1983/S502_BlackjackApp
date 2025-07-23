@@ -12,11 +12,16 @@ spring:
     username: root
     password: 1707
 
+  output:
+    ansi:
+      enabled: ALWAYS
+
 server:
   port: 8080
 
 jwt:
   secret: my-super-secret-key-123456
+
 
 # EJECUCIÓN EN LOCAL:
 
