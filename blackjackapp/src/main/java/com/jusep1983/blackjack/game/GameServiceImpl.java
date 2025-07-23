@@ -14,11 +14,12 @@ import com.jusep1983.blackjack.shared.exception.PlayerNotFoundException;
 import com.jusep1983.blackjack.shared.exception.UnauthorizedGameAccessException;
 import lombok.RequiredArgsConstructor;
 import com.jusep1983.blackjack.shared.utils.AuthUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class GameServiceImpl implements GameService {
@@ -28,17 +29,6 @@ public class GameServiceImpl implements GameService {
     private final HandService handService;
     private final PlayerService playerService;
 
-    private Mono<Game> requireOwnership(Game game, String currentUser) {
-        if (!game.getUserName().equals(currentUser)) {
-            return Mono.error(new UnauthorizedGameAccessException("This is not your game"));
-        }
-        return Mono.just(game);
-    }
-
-    private Mono<Game> findGameOr404(String id) {
-        return gameRepository.findById(id)
-                .switchIfEmpty(Mono.error(new GameNotFoundException("Game not found with id: " + id)));
-    }
 
     @Override
     public Mono<Game> createGame() {
@@ -47,6 +37,7 @@ public class GameServiceImpl implements GameService {
                         playerService.getByName(userName)
                                 .switchIfEmpty(Mono.error(new PlayerNotFoundException("Player not found: " + userName)))
                                 .flatMap(player -> {
+                                    log.info("Creating new game for player '{}'", userName); // player found, starting game
                                     Game game = new Game();
                                     game.setUserName(userName);
                                     game.setGameStatus(GameStatus.NEW);
@@ -63,13 +54,16 @@ public class GameServiceImpl implements GameService {
                                     handService.addCardToHand(game.getPlayerHand(), deckService.drawCard(deck));
                                     handService.addCardToHand(game.getDealerHand(), deckService.drawCard(deck));
                                     handService.addCardToHand(game.getDealerHand(), deckService.drawCard(deck));
+                                    log.debug("Cards dealt to player and dealer for '{}'", userName); // deck and hands ready
                                     // Calcular puntos iniciales
                                     evaluateInitStatus(game);
                                     return gameRepository.save(game)
+                                            .doOnSuccess(saved -> log.info("Game '{}' saved for player '{}'", saved.getId(), userName)) // game persisted
+                                            .doOnError(error -> log.error("Failed to save game for '{}': {}", userName, error.getMessage())) // save failed
                                             .flatMap(saved -> {
-                                                // Si la partida terminó instantáneamente (blackjack), actualizamos stats
                                                 if (saved.getGameStatus() == GameStatus.FINISHED) {
-                                                    return playerService.updateStats(saved.getUserName(), saved.getGameResult())
+                                                    log.info("Game '{}' finished instantly. Updating stats for '{}'", saved.getId(), userName);
+                                                    return playerService.updateStats(userName, saved.getGameResult())
                                                             .thenReturn(saved);
                                                 }
                                                 return Mono.just(saved);
@@ -101,20 +95,24 @@ public class GameServiceImpl implements GameService {
     @Override
     public Mono<Game> getGameById(String id) {
         return AuthUtils.getCurrentUserName()
-                .flatMap(currentUser ->
-                        findGameOr404(id)
-                                .flatMap(game -> requireOwnership(game, currentUser))
-                );
+                .flatMap(currentUser -> {
+                    log.debug("Fetching game '{}' for user '{}'", id, currentUser);
+                    return findGameOr404(id)
+                            .flatMap(game -> requireOwnership(game, currentUser));
+                });
     }
 
     @Override
     public Mono<Void> deleteGameById(String id) {
         return AuthUtils.getCurrentUserName()
-                .flatMap(currentUser ->
-                        findGameOr404(id)
-                                .flatMap(game -> requireOwnership(game, currentUser))
-                                .flatMap(g -> gameRepository.deleteById(id))
-                );
+                .flatMap(currentUser -> {
+                    log.info("User '{}' requested deletion of game '{}'", currentUser, id);
+                    return findGameOr404(id)
+                            .flatMap(game -> requireOwnership(game, currentUser))
+                            .flatMap(g -> gameRepository.deleteById(id)
+                                    .doOnSuccess(unused -> log.info("Game '{}' deleted by user '{}'", id, currentUser))
+                                    .doOnError(e -> log.error("Error deleting game '{}': {}", id, e.getMessage())));
+                });
     }
 
     @Override
@@ -124,8 +122,8 @@ public class GameServiceImpl implements GameService {
                         findGameOr404(gameId)
                                 .flatMap(game -> requireOwnership(game, currentUser))
                                 .flatMap(game -> {
-
                                     if (game.getGameStatus() == GameStatus.FINISHED) {
+                                        log.warn("Player '{}' tried to hit on a finished game '{}'", currentUser, gameId);
                                         return Mono.error(new GameAlreadyFinishedException("Game has already finished"));
                                     }
 
@@ -133,18 +131,19 @@ public class GameServiceImpl implements GameService {
                                     Card card = deckService.drawCard(deck);
                                     handService.addCardToHand(game.getPlayerHand(), card);
 
+                                    log.debug("Player '{}' drew card {} in game '{}'", currentUser, card, gameId);
+
                                     int points = handService.calculatePoints(game.getPlayerHand());
                                     game.setPlayerPoints(points);
 
                                     if (points > 21) {
-                                        // Jugador se pasa -> Dealer gana
+                                        log.info("Player '{}' busted in game '{}'", currentUser, gameId);
                                         game.setGameStatus(GameStatus.FINISHED);
                                         game.setGameResult(GameResult.DEALER_WIN);
                                         return gameRepository.save(game)
                                                 .flatMap(g -> playerService.updateStats(g.getUserName(), GameResult.DEALER_WIN)
                                                         .thenReturn(g));
                                     } else {
-                                        // Sigue la partida
                                         game.setGameStatus(GameStatus.IN_PROGRESS);
                                         return gameRepository.save(game);
                                     }
@@ -197,6 +196,22 @@ public class GameServiceImpl implements GameService {
         } else {
             return GameResult.TIE;
         }
+    }
+
+    private Mono<Game> requireOwnership(Game game, String currentUser) {
+        if (!game.getUserName().equals(currentUser)) {
+            log.warn("Unauthorized access attempt by '{}' to game '{}'", currentUser, game.getId());
+            return Mono.error(new UnauthorizedGameAccessException("This is not your game"));
+        }
+        return Mono.just(game);
+    }
+
+    private Mono<Game> findGameOr404(String id) {
+        return gameRepository.findById(id)
+                .switchIfEmpty(Mono.defer(() -> {
+                    log.warn("Game not found with ID: {}", id);
+                    return Mono.error(new GameNotFoundException("Game not found with id: " + id));
+                }));
     }
 
 }
