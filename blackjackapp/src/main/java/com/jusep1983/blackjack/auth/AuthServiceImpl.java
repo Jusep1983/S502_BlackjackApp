@@ -18,7 +18,6 @@ public class AuthServiceImpl implements AuthService {
     private final Algorithm algorithm;
     private static final int EXPIRATION_MINUTES = 60;
 
-
     public AuthServiceImpl(@Value("${jwt.secret}") String secretKey) {
         this.algorithm = Algorithm.HMAC256(secretKey);
     }
