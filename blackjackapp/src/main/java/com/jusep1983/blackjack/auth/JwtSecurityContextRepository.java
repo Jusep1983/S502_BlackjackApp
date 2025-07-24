@@ -29,18 +29,19 @@ public class JwtSecurityContextRepository implements ServerSecurityContextReposi
     public Mono<SecurityContext> load(ServerWebExchange exchange) {
         String authHeader = exchange.getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
+        // Esperamos un token tipo: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7);
+            String token = authHeader.substring(7); // quitamos "Bearer "
             log.debug("Received JWT token for authentication");
-
+            // Creamos un Authentication fake para pasarlo al authManager
             UsernamePasswordAuthenticationToken authToken =
                     new UsernamePasswordAuthenticationToken(token, token);
 
+            // El manager validará el token y devolverá un Authentication válido
             return authenticationManager.authenticate(authToken)
-                    .doOnNext(auth -> log.info("Token authentication succeeded for user '{}'", auth.getName()))
-                    .doOnError(error -> log.warn("Token authentication failed: {}", error.getMessage()))
                     .map(SecurityContextImpl::new);
         }
+        // Si no hay token válido, no autenticamos
         log.debug("No valid Authorization header found, skipping authentication");
         return Mono.empty();
     }

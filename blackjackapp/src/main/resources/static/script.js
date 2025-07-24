@@ -49,7 +49,7 @@ function createGame() {
     .then(data => {
       currentGameId = data.data.id;
       document.getElementById("gameId").value = currentGameId;
-      alert("Partida creada con ID: " + currentGameId);
+      // alert("Partida creada con ID: " + currentGameId);
       getGame(); // mostrar detalles directamente
     });
 }

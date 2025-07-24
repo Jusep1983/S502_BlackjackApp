@@ -2,11 +2,13 @@ package com.jusep1983.blackjack.deck;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+@Slf4j
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -23,13 +25,14 @@ public class Deck {
 
     public Card drawCard() {
         if (isEmpty()) {
+            log.error("Attempted to draw a card from an empty deck");
             throw new IllegalStateException("Deck is empty");
         }
         return cards.remove(0);
     }
 
-    public void shuffle() {
-        Collections.shuffle(cards);
-    }
+//    public void shuffle() {
+//        Collections.shuffle(cards);
+//    }
 
 }

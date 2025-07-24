@@ -7,12 +7,11 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
-import org.springframework.context.annotation.Bean;
 import org.springframework.data.mongodb.repository.config.EnableReactiveMongoRepositories;
 import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories;
 
-@EnableR2dbcRepositories(basePackages = "com.jusep1983.blackjack.player")
-@EnableReactiveMongoRepositories(basePackages = "com.jusep1983.blackjack.game")
+//@EnableR2dbcRepositories(basePackages = "com.jusep1983.blackjack.player")
+//@EnableReactiveMongoRepositories(basePackages = "com.jusep1983.blackjack.game")
 @SpringBootApplication(exclude = {HibernateJpaAutoConfiguration.class, DataSourceAutoConfiguration.class})
 public class BlackjackApplication {
 
@@ -20,22 +19,6 @@ public class BlackjackApplication {
         SpringApplication.run(BlackjackApplication.class, args);
     }
 
-
-//    @Bean
-//    public CommandLineRunner promoteToSuperUser(PlayerRepository playerRepository) {
-//        return args -> {
-//            String targetUserName = "Jose"; // tu username
-//
-//            playerRepository.findByUserName(targetUserName)
-//                    .flatMap(player -> {
-//                        player.setRole(Role.SUPER_USER);
-//                        return playerRepository.save(player);
-//                    })
-//                    .doOnSuccess(p -> System.out.println("✅ " + p.getUserName() + " ahora es SUPERUSER"))
-//                    .doOnError(err -> System.err.println("❌ Error promoviendo a SUPERUSER: " + err.getMessage()))
-//                    .subscribe();
-//        };
-//    }
 }
 
 

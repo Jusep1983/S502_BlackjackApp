@@ -7,6 +7,7 @@ import com.jusep1983.blackjack.shared.enums.Role;
 import com.jusep1983.blackjack.shared.exception.PlayerNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -19,6 +20,7 @@ public class AdminServiceImpl implements AdminService {
     private final GameRepository gameRepository;
 
     @Override
+    @PreAuthorize("hasRole('SUPER_USER')")
     public Mono<Player> setRole(String playerId, Role newRole) {
         log.info("Request to change role of player with ID '{}' to '{}'", playerId, newRole);
 
@@ -40,6 +42,7 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_USER')")
     public Mono<Void> deletePlayerAndGames(String userName) {
         log.info("Deleting player '{}' and all their games", userName);
 
