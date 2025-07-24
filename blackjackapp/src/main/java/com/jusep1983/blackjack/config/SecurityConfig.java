@@ -3,6 +3,7 @@ package com.jusep1983.blackjack.config;
 import com.jusep1983.blackjack.auth.JwtAuthenticationManager;
 import com.jusep1983.blackjack.auth.JwtSecurityContextRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -12,6 +13,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 
+@Slf4j
 @Configuration
 @EnableReactiveMethodSecurity
 @RequiredArgsConstructor
@@ -21,6 +23,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
+        log.info("Initializing SecurityWebFilterChain...");
         return http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
@@ -40,6 +43,7 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
+        log.debug("Creating BCryptPasswordEncoder bean");
         return new BCryptPasswordEncoder();
     }
 
