@@ -25,8 +25,13 @@ public class AuthUtils {
         return getCurrentUserName()
                 .flatMap(userName ->
                         playerRepository.findByUserName(userName)
-                                .switchIfEmpty(Mono.error(new PlayerNotFoundException("Player not found: " + userName)))
-                );
+                                .doOnNext(p -> log.debug("Authenticated player found: {}", p.getUserName()))
+                                .switchIfEmpty(
+                                        Mono.defer(() -> {
+                                            log.warn("Player not found for authenticated user: {}", userName);
+                                            return Mono.error(new PlayerNotFoundException("Player not found: " + userName));
+                                        })
+                ));
     }
 
 }
