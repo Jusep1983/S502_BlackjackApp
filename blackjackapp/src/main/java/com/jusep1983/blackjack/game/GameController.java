@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,15 +16,11 @@ import reactor.core.publisher.Mono;
 
 @Slf4j
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/game")
 @SecurityRequirement(name = "bearerAuth")
 public class GameController {
-
     private final GameService gameService;
-
-    public GameController(GameService gameService) {
-        this.gameService = gameService;
-    }
 
     @Operation(summary = "Create a new game for the authenticated player")
     @ApiResponse(responseCode = "201", description = "Game created")

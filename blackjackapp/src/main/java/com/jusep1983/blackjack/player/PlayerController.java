@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
@@ -19,12 +20,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/player")
 @SecurityRequirement(name = "bearerAuth")
+@AllArgsConstructor
 public class PlayerController {
     private final PlayerService playerService;
-
-    public PlayerController(PlayerService playerService) {
-        this.playerService = playerService;
-    }
 
     @PutMapping("/updateAlias")
     @Operation(summary = "Update alias of the current authenticated player")

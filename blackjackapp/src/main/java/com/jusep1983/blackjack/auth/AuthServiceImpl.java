@@ -14,7 +14,6 @@ import java.util.Date;
 @Slf4j
 @Service
 public class AuthServiceImpl implements AuthService {
-
     private final Algorithm algorithm;
     private static final int EXPIRATION_MINUTES = 60;
 

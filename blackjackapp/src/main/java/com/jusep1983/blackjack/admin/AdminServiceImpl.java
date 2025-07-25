@@ -15,7 +15,6 @@ import reactor.core.publisher.Mono;
 @Service
 @RequiredArgsConstructor
 public class AdminServiceImpl implements AdminService {
-
     private final PlayerRepository playerRepository;
     private final GameRepository gameRepository;
 

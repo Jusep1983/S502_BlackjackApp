@@ -11,6 +11,7 @@ import com.jusep1983.blackjack.shared.exception.FieldEmptyException;
 import com.jusep1983.blackjack.shared.exception.PlayerNotFoundException;
 import com.jusep1983.blackjack.shared.exception.UsernameAlreadyExistsException;
 import com.jusep1983.blackjack.shared.utils.AuthUtils;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,16 +23,11 @@ import java.time.LocalDateTime;
 @Slf4j
 @Data
 @Service
+@AllArgsConstructor
 public class PlayerServiceImpl implements PlayerService {
     private final PlayerRepository playerRepository;
     private final PasswordEncoder passwordEncoder;
     private final GameRepository gameRepository;
-
-    public PlayerServiceImpl(PlayerRepository playerRepository, PasswordEncoder passwordEncoder,GameRepository gameRepository) {
-        this.playerRepository = playerRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.gameRepository = gameRepository;
-    }
 
     @Override
     public Mono<Player> createPlayer(CreatePlayerDTO dto) {

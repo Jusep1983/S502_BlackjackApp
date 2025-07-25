@@ -4,6 +4,8 @@ import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.SignatureVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
@@ -17,13 +19,9 @@ import java.util.Collections;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class JwtAuthenticationManager implements ReactiveAuthenticationManager {
     private final AuthService authService;
-
-    @Autowired
-    public JwtAuthenticationManager(AuthService authService) {
-        this.authService = authService;
-    }
 
     @Override
     public Mono<Authentication> authenticate(Authentication authentication) {

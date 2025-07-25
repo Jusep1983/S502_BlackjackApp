@@ -1,5 +1,6 @@
 package com.jusep1983.blackjack.auth;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -13,13 +14,9 @@ import reactor.core.publisher.Mono;
 
 @Slf4j
 @Component
+@AllArgsConstructor
 public class JwtSecurityContextRepository implements ServerSecurityContextRepository {
     private final JwtAuthenticationManager authenticationManager;
-
-    @Autowired
-    public JwtSecurityContextRepository(JwtAuthenticationManager authenticationManager) {
-        this.authenticationManager = authenticationManager;
-    }
 
     /**
      * Metodo principal: se ejecuta en cada request.

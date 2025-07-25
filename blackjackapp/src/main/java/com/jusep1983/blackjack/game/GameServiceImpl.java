@@ -23,7 +23,6 @@ import java.time.LocalDateTime;
 @Service
 @RequiredArgsConstructor
 public class GameServiceImpl implements GameService {
-
     private final GameRepository gameRepository;
     private final DeckService deckService;
     private final HandService handService;

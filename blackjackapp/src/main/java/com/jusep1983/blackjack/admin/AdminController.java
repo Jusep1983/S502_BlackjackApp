@@ -15,7 +15,6 @@ import reactor.core.publisher.Mono;
 @RestController
 @RequestMapping("/admin")
 public class AdminController {
-
     private final AdminService adminService;
 
     @PreAuthorize("hasRole('SUPER_USER')")
