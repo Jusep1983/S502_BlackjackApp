@@ -65,23 +65,6 @@ public class PlayerServiceImpl implements PlayerService {
         return playerRepository.save(newPlayer);
     }
 
-//    @Override
-//    public Mono<Player> updateAlias(String newAlias) {
-//        if (newAlias == null || newAlias.trim().isEmpty()) {
-//            log.warn("Attempt to update alias with empty value");
-//            return Mono.error(new FieldEmptyException("Alias cannot be empty"));
-//        }
-//        String trimmedAlias = newAlias.trim();
-//        return AuthUtils.getCurrentPlayer(playerRepository)
-//                .flatMap(player -> {
-//                    log.info("Updating alias for player '{}'", player.getUserName());
-//                    player.setAlias(trimmedAlias);
-//                    return playerRepository.save(player)
-//                            .doOnSuccess(p -> log.info("Alias updated to '{}' for player '{}'", trimmedAlias, player.getUserName()))
-//                            .doOnError(e -> log.error("Failed to update alias for '{}': {}", player.getUserName(), e.getMessage()));
-//                });
-//    }
-
     @Override
     public Mono<Player> updateAlias(String newAlias) {
         return AuthUtils.getCurrentUserName()
@@ -146,9 +129,11 @@ public class PlayerServiceImpl implements PlayerService {
     public Flux<PlayerRankingDTO> getRanking() {
         log.info("Fetching player ranking");
         return playerRepository.findAllByOrderByGamesWonDesc()
+                .filter(player -> player.getRole() != Role.SUPER_USER) // 👈 EXCLUIR
                 .index()
                 .map(tuple -> new PlayerRankingDTO(
-                        tuple.getT1().intValue() + 1, tuple.getT2()
+                        tuple.getT1().intValue() + 1,
+                        tuple.getT2()
                 ));
     }
 

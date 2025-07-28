@@ -86,6 +86,9 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public Mono<ResponseEntity<MyApiResponse<ErrorResponse>>> handleIllegalArgument(IllegalArgumentException ex, ServerHttpRequest request) {
         log.error("Illegal argument: {}", ex.getMessage());
+        if (ex.getMessage().contains("SUPER_USER")) {
+            return response(HttpStatus.FORBIDDEN, ex.getMessage(), request);
+        }
         return response(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
     }
 

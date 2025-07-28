@@ -48,12 +48,18 @@ public class AdminServiceImpl implements AdminService {
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_USER')")
     public Mono<Void> deletePlayerAndGames(String userName) {
         log.info("Deleting player '{}' and all their games", userName);
-
-        return gameRepository.deleteAllByUserName(userName)
-                .doOnSuccess(v -> log.debug("All games for player '{}' deleted", userName))
-                .then(playerRepository.deleteByUserName(userName))
-                .doOnSuccess(v -> log.info("Player '{}' deleted", userName))
-                .doOnError(e -> log.error("Error deleting player '{}' or their games: {}", userName, e.getMessage()))
+        return playerRepository.findByUserName(userName)
+                .switchIfEmpty(Mono.error(new PlayerNotFoundException(userName)))
+                .flatMap(player -> {
+                    if (player.getRole() == Role.SUPER_USER) {
+                        log.warn("Attempt to delete SUPER_USER '{}'", userName);
+                        return Mono.error(new IllegalArgumentException("Cannot delete a SUPER_USER"));
+                    }
+                    return gameRepository.deleteAllByUserName(userName)
+                            .then(playerRepository.deleteByUserName(userName))
+                            .doOnSuccess(v -> log.info("Player '{}' and all games deleted", userName));
+                })
+                .doOnError(e -> log.error("Error deleting player '{}': {}", userName, e.getMessage()))
                 .then();
     }
 }

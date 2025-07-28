@@ -1,6 +1,7 @@
 package com.jusep1983.blackjack.player.dto;
 
 import com.jusep1983.blackjack.player.Player;
+import com.jusep1983.blackjack.shared.enums.Role;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.Getter;
@@ -27,6 +28,8 @@ public class PlayerRankingDTO {
     private String winPercentage;
     @Schema(description = "id of the player", example = "1")
     private Long playerId;
+    @Schema(description = "Rol del jugador", example = "USER")
+    private Role role;
 
     public PlayerRankingDTO(int position, Player player) {
         this.position = position;
@@ -39,6 +42,7 @@ public class PlayerRankingDTO {
         this.winPercentage = new BigDecimal(porcentaje)
                                      .setScale(2, RoundingMode.HALF_UP) + "%";
         this.playerId = player.getId();
+        this.role = player.getRole();
     }
 
 }
