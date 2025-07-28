@@ -3,6 +3,8 @@ package com.jusep1983.blackjack.shared.exception;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.jusep1983.blackjack.shared.response.ErrorResponse;
 import com.jusep1983.blackjack.shared.response.MyApiResponse;
+import com.jusep1983.blackjack.shared.response.ResponseBuilder;
+import com.mongodb.DuplicateKeyException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -73,6 +75,12 @@ public class GlobalExceptionHandler {
                 .collect(Collectors.joining("; "));
         log.warn("Validation failed: {}", message);
         return response(HttpStatus.BAD_REQUEST, "Validation failed: " + message, request);
+    }
+
+    @ExceptionHandler(AliasAlreadyExistsException.class)
+    public Mono<ResponseEntity<MyApiResponse<ErrorResponse>>> handleAliasAlreadyExistsException(AliasAlreadyExistsException ex, ServerHttpRequest request) {
+        log.warn("Alias conflict: {}", ex.getMessage());
+        return response(HttpStatus.BAD_REQUEST, "Alias conflict: " + ex.getMessage(), request);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

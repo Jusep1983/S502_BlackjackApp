@@ -7,10 +7,12 @@ import com.jusep1983.blackjack.player.dto.PlayerRankingDTO;
 import com.jusep1983.blackjack.player.dto.PlayerWithGamesDTO;
 import com.jusep1983.blackjack.shared.enums.GameResult;
 import com.jusep1983.blackjack.shared.enums.Role;
+import com.jusep1983.blackjack.shared.exception.AliasAlreadyExistsException;
 import com.jusep1983.blackjack.shared.exception.FieldEmptyException;
 import com.jusep1983.blackjack.shared.exception.PlayerNotFoundException;
 import com.jusep1983.blackjack.shared.exception.UsernameAlreadyExistsException;
 import com.jusep1983.blackjack.shared.utils.AuthUtils;
+import io.r2dbc.spi.R2dbcDataIntegrityViolationException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -63,21 +65,42 @@ public class PlayerServiceImpl implements PlayerService {
         return playerRepository.save(newPlayer);
     }
 
+//    @Override
+//    public Mono<Player> updateAlias(String newAlias) {
+//        if (newAlias == null || newAlias.trim().isEmpty()) {
+//            log.warn("Attempt to update alias with empty value");
+//            return Mono.error(new FieldEmptyException("Alias cannot be empty"));
+//        }
+//        String trimmedAlias = newAlias.trim();
+//        return AuthUtils.getCurrentPlayer(playerRepository)
+//                .flatMap(player -> {
+//                    log.info("Updating alias for player '{}'", player.getUserName());
+//                    player.setAlias(trimmedAlias);
+//                    return playerRepository.save(player)
+//                            .doOnSuccess(p -> log.info("Alias updated to '{}' for player '{}'", trimmedAlias, player.getUserName()))
+//                            .doOnError(e -> log.error("Failed to update alias for '{}': {}", player.getUserName(), e.getMessage()));
+//                });
+//    }
+
     @Override
     public Mono<Player> updateAlias(String newAlias) {
-        if (newAlias == null || newAlias.trim().isEmpty()) {
-            log.warn("Attempt to update alias with empty value");
-            return Mono.error(new FieldEmptyException("Alias cannot be empty"));
-        }
-        String trimmedAlias = newAlias.trim();
-        return AuthUtils.getCurrentPlayer(playerRepository)
-                .flatMap(player -> {
-                    log.info("Updating alias for player '{}'", player.getUserName());
-                    player.setAlias(trimmedAlias);
-                    return playerRepository.save(player)
-                            .doOnSuccess(p -> log.info("Alias updated to '{}' for player '{}'", trimmedAlias, player.getUserName()))
-                            .doOnError(e -> log.error("Failed to update alias for '{}': {}", player.getUserName(), e.getMessage()));
-                });
+        return AuthUtils.getCurrentUserName()
+                .flatMap(userName ->
+                        playerRepository.findByUserName(userName)
+                                .switchIfEmpty(Mono.error(new PlayerNotFoundException("Player not found")))
+                                .flatMap(player -> {
+                                    player.setAlias(newAlias);
+                                    return playerRepository.save(player)
+                                            .onErrorMap(e -> {
+                                                if (e instanceof R2dbcDataIntegrityViolationException
+                                                    || (e.getMessage() != null && e.getMessage().contains("Duplicate entry"))) {
+                                                    log.warn("Alias '{}' is already in use", newAlias);
+                                                    return new AliasAlreadyExistsException("Alias already in use: " + newAlias);
+                                                }
+                                                return e;
+                                            });
+                                })
+                );
     }
 
     @Override
