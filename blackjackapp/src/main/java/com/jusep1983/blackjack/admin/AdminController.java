@@ -33,7 +33,7 @@ public class AdminController {
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_USER')")
     @DeleteMapping("/delete-player/by-username/{userName}")
     public Mono<ResponseEntity<MyApiResponse<String>>> deletePlayerByUserName(@PathVariable String userName) {
-        log.warn("Delete requested for player '{}'", userName);
+        log.info("Delete requested for player '{}'", userName);
 
         return adminService.deletePlayerAndGames(userName)
                 .doOnSuccess(unused -> log.info("Player '{}' and related games deleted", userName))

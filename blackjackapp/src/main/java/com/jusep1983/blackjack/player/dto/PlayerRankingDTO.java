@@ -25,6 +25,8 @@ public class PlayerRankingDTO {
     private int gamesTied;
     @Schema(description = "Percentage of games the player has won", example = "70.0")
     private String winPercentage;
+    @Schema(description = "id of the player", example = "1")
+    private Long playerId;
 
     public PlayerRankingDTO(int position, Player player) {
         this.position = position;
@@ -36,6 +38,7 @@ public class PlayerRankingDTO {
         double porcentaje = gamesPlayed > 0 ? (gamesWon * 100.0) / gamesPlayed : 0.0;
         this.winPercentage = new BigDecimal(porcentaje)
                                      .setScale(2, RoundingMode.HALF_UP) + "%";
+        this.playerId = player.getId();
     }
 
 }

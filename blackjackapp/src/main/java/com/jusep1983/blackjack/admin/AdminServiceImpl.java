@@ -34,6 +34,10 @@ public class AdminServiceImpl implements AdminService {
                     return Mono.error(new PlayerNotFoundException(playerId));
                 }))
                 .flatMap(player -> {
+                    if (player.getRole() == Role.SUPER_USER) {
+                        log.warn("Attempt to modify role of SUPER_USER '{}'", player.getUserName());
+                        return Mono.error(new IllegalArgumentException("Cannot change role of a SUPER_USER"));
+                    }
                     player.setRole(newRole);
                     log.info("Updating role for player '{}' to '{}'", player.getUserName(), newRole);
                     return playerRepository.save(player);
