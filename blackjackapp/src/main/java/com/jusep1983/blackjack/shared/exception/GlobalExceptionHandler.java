@@ -92,6 +92,12 @@ public class GlobalExceptionHandler {
         return response(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
     }
 
+    @ExceptionHandler(UnauthorizedAccessException.class)
+    public Mono<ResponseEntity<MyApiResponse<ErrorResponse>>> handleUnauthorizedAccess(UnauthorizedAccessException ex, ServerHttpRequest request) {
+        log.warn("Unauthorized access: {}", ex.getMessage());
+        return response(HttpStatus.FORBIDDEN, ex.getMessage(), request);
+    }
+
     @ExceptionHandler(Exception.class)
     public Mono<ResponseEntity<MyApiResponse<ErrorResponse>>> handleGeneral(Exception ex, ServerHttpRequest request) {
         log.error("Unexpected error: {}", ex.getMessage(), ex);

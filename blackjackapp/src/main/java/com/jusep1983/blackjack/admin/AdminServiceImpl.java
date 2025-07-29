@@ -5,6 +5,8 @@ import com.jusep1983.blackjack.player.PlayerRepository;
 import com.jusep1983.blackjack.game.GameRepository;
 import com.jusep1983.blackjack.shared.enums.Role;
 import com.jusep1983.blackjack.shared.exception.PlayerNotFoundException;
+import com.jusep1983.blackjack.shared.exception.UnauthorizedAccessException;
+import com.jusep1983.blackjack.shared.utils.AuthUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -46,20 +48,37 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_USER')")
-    public Mono<Void> deletePlayerAndGames(String userName) {
-        log.info("Deleting player '{}' and all their games", userName);
-        return playerRepository.findByUserName(userName)
-                .switchIfEmpty(Mono.error(new PlayerNotFoundException(userName)))
-                .flatMap(player -> {
-                    if (player.getRole() == Role.SUPER_USER) {
-                        log.warn("Attempt to delete SUPER_USER '{}'", userName);
+    public Mono<Void> deletePlayerAndGames(String targetUserName) {
+        return AuthUtils.getCurrentUserName()
+                .flatMap(currentUserName ->
+                        playerRepository.findByUserName(currentUserName)
+                                .switchIfEmpty(Mono.error(new PlayerNotFoundException("Authenticated player not found: " + currentUserName)))
+                                .zipWith(
+                                        playerRepository.findByUserName(targetUserName)
+                                                .switchIfEmpty(Mono.error(new PlayerNotFoundException("Target player not found: " + targetUserName)))
+                                )
+                )
+                .flatMap(tuple -> {
+                    Player currentUser = tuple.getT1();
+                    Player targetPlayer = tuple.getT2();
+
+                    if (targetPlayer.getRole() == Role.SUPER_USER) {
+                        log.warn("Attempt to delete SUPER_USER '{}'", targetUserName);
                         return Mono.error(new IllegalArgumentException("Cannot delete a SUPER_USER"));
                     }
-                    return gameRepository.deleteAllByUserName(userName)
-                            .then(playerRepository.deleteByUserName(userName))
-                            .doOnSuccess(v -> log.info("Player '{}' and all games deleted", userName));
+
+                    if (currentUser.getRole() == Role.ADMIN && targetPlayer.getRole() == Role.ADMIN) {
+                        log.warn("ADMIN '{}' attempted to delete another ADMIN '{}'", currentUser.getUserName(), targetUserName);
+                        return Mono.error(new UnauthorizedAccessException("Admins cannot delete other Admins"));
+                    }
+
+                    log.info("Deleting player '{}' and all their games", targetUserName);
+
+                    return gameRepository.deleteAllByUserName(targetUserName)
+                            .then(playerRepository.deleteByUserName(targetUserName))
+                            .doOnSuccess(v -> log.info("Player '{}' and all games deleted", targetUserName));
                 })
-                .doOnError(e -> log.error("Error deleting player '{}': {}", userName, e.getMessage()))
+                .doOnError(e -> log.error("Error deleting player '{}': {}", targetUserName, e.getMessage()))
                 .then();
     }
 }
