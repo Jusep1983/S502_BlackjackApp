@@ -1,19 +1,20 @@
 # Imagen base con JDK 21
 FROM eclipse-temurin:21-jdk
 
-# Directorio de trabajo dentro del contenedor
+# Directorio de trabajo
 WORKDIR /app
 
-# Copia los ficheros de Maven al contenedor
+# Copiar los archivos necesarios
 COPY pom.xml .
 COPY src ./src
 
-# Instalamos Maven y construimos el proyecto (sin tests para acelerar)
-RUN apt-get update && apt-get install -y maven
-RUN mvn clean package -DskipTests
+# Instalar Maven y construir (sin tests)
+RUN apt-get update && apt-get install -y maven && \
+    mvn clean package -DskipTests && \
+    apt-get remove -y maven && apt-get autoremove -y
 
-# Expone el puerto 8080 (el que usa tu API)
+# Exponer el puerto
 EXPOSE 8080
 
-# Comando para arrancar la app (ajusta el nombre del JAR si es distinto)
+# Ejecutar la app
 CMD ["java", "-jar", "target/blackjackapp-0.0.1-SNAPSHOT.jar"]

@@ -1,15 +1,15 @@
-spring:
-
-  r2dbc:
-    url: ${SPRING_R2DBC_URL}
-    username: ${SPRING_R2DBC_USERNAME}
-    password: ${SPRING_R2DBC_PASSWORD}
-
-  mongodb:
-    uri: ${SPRING_DATA_MONGODB_URI}
-
-server:
-  port: ${PORT:8080}
+#spring:
+#
+#  r2dbc:
+#    url: ${SPRING_R2DBC_URL}
+#    username: ${SPRING_R2DBC_USERNAME}
+#    password: ${SPRING_R2DBC_PASSWORD}
+#
+#  mongodb:
+#    uri: ${SPRING_DATA_MONGODB_URI}
+#
+#server:
+#  port: ${PORT:8080}
 
 # DEPLOY
 # index.html:
