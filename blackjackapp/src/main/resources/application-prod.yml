@@ -15,3 +15,6 @@ server:
 
 jwt:
   secret: ${JWT_SECRET}
+
+# https://s502-blackjackapp.onrender.com/swagger-ui.html
+# https://s502-blackjackapp.onrender.com/swagger-ui/index.html
