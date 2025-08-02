@@ -2,22 +2,24 @@
 
 API y aplicación web para jugar al Blackjack, con autenticación JWT, roles de usuario, gestión de jugadores, ranking y persistencia en MongoDB y MySQL.
 
-## 📚 Tabla de Contenidos
-  * [📝 Descripción](#---descripci-n)
-  * [🔐 Configuración de variables sensibles (JWT y Bases de Datos)](#---configuraci-n-de-variables-sensibles--jwt-y-bases-de-datos-)
-  * [✨ Características principales](#--caracter-sticas-principales)
-  * [🛠️ Tecnologías](#----tecnolog-as)
-  * [📂 Estructura real del repositorio](#---estructura-real-del-repositorio)
-  * [⚡ Instalación y ejecución](#--instalaci-n-y-ejecuci-n)
-    + [1. 📥 Clona el repositorio](#1----clona-el-repositorio)
-    + [2. ⚙️ Configura tus variables de entorno](#2----configura-tus-variables-de-entorno)
-    + [3. 🚀 Ejecuta la aplicación (local)](#3----ejecuta-la-aplicaci-n--local-)
-    + [4. 🧪 Pruebas automáticas](#4----pruebas-autom-ticas)
-    + [5. 🐳 Docker (opcional)](#5----docker--opcional-)
-  * [🔗 Endpoints principales](#---endpoints-principales)
-  * [🔒 Seguridad y roles](#---seguridad-y-roles)
-  * [✅ Testing](#--testing)
-  * [🚀 Prueba la app desplegada (Frontend)](#---prueba-la-app-desplegada--frontend-)
+## Tabla de Contenidos
+- [Descripcion](#descripcion)
+- [Configuracion de variables sensibles (JWT y Bases de Datos)](#configuracion-de-variables-sensibles-jwt-y-bases-de-datos)
+- [Caracteristicas principales](#caracteristicas-principales)
+- [Tecnologias](#tecnologias)
+- [Estructura real del repositorio](#estructura-real-del-repositorio)
+- [Instalacion y ejecucion](#instalacion-y-ejecucion)
+  - [1. Clona el repositorio](#1-clona-el-repositorio)
+  - [2. Configura tus variables de entorno](#2-configura-tus-variables-de-entorno)
+  - [3. Ejecuta la aplicacion (local)](#3-ejecuta-la-aplicacion-local)
+  - [4. Pruebas automaticas](#4-pruebas-automaticas)
+  - [5. Docker (opcional)](#5-docker-opcional)
+- [Endpoints principales](#endpoints-principales)
+- [Seguridad y roles](#seguridad-y-roles)
+- [Testing](#testing)
+- [Despliegue Docker](#despliegue-docker)
+- [Autor](#autor)
+- [Prueba la app desplegada (Frontend)](#prueba-la-app-desplegada-frontend)
 
 
 ---
@@ -125,7 +127,7 @@ git clone https://github.com/Jusep1983/S502_BlackjackApp.git
 cd S502_BlackjackApp
 ```
 
-### 2. ⚙️ Configura tus variables de entorno
+### 2. Configura tus variables de entorno
 
 - 🍃 **MongoDB**: (por ejemplo, MongoDB Atlas)
 - 🐬 **MySQL**: Crea la base de datos y tabla `players` (puedes usar el script SQL incluido)
@@ -133,7 +135,7 @@ cd S502_BlackjackApp
 
 Copia y personaliza el archivo `.env.example` (si existe) o configura en `application.yml` / `application.properties`.
 
-### 3. 🚀 Ejecuta la aplicación (local)
+### 3. Ejecuta la aplicación (local)
 
 ```bash
 mvn spring-boot:run
