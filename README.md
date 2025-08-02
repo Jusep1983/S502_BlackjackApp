@@ -128,7 +128,7 @@ git clone https://github.com/Jusep1983/S502_BlackjackApp.git
 cd S502_BlackjackApp
 ```
 
-### 2. Configura tus variables de entorno
+### ⚙️ 2. Configura tus variables de entorno
 
 - 🍃 **MongoDB**: (por ejemplo, MongoDB Atlas)
 - 🐬 **MySQL**: Crea la base de datos y tabla `players` (puedes usar el script SQL incluido)
