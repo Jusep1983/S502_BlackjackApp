@@ -24,11 +24,11 @@ API y aplicacion web para jugar al Blackjack, con autenticacion JWT, roles de us
 
 ---
 
-## Descripcion
+📝 ## Descripcion
 
 📝 BlackjackApp es una API REST y web app para jugar partidas de Blackjack contra la banca, con registro/login, gestion y ranking de jugadores, panel de administracion, y seguridad JWT. El backend esta desarrollado con **Spring WebFlux** y persiste datos en **MongoDB** (partidas) y **MySQL** (jugadores). Incluye documentacion Swagger/OpenAPI y pruebas automatizadas.
 
-## Configuracion de variables sensibles (JWT y Bases de Datos)
+🔐 ## Configuracion de variables sensibles (JWT y Bases de Datos)
 
 Antes de ejecutar el backend, debes definir estas variables de entorno en tu maquina local editando en application-local.yml:
 
@@ -43,7 +43,7 @@ MYSQL_PASSWORD=password
 
 ---
 
-## Caracteristicas principales
+✨ ## Caracteristicas principales
 
 - Registro y login de usuarios con JWT
 - Roles: `USER`, `ADMIN`, `SUPER_USER`
@@ -58,7 +58,7 @@ MYSQL_PASSWORD=password
 
 ---
 
-## Tecnologias
+🛠️ ## Tecnologias
 
 - Java 21
 - Spring Boot 3.x
@@ -73,7 +73,7 @@ MYSQL_PASSWORD=password
 
 ---
 
-## Estructura real del repositorio
+📂 ## Estructura real del repositorio
 
 ```
 S502_BlackjackApp/
@@ -120,7 +120,7 @@ S502_BlackjackApp/
 
 ---
 
-## Instalacion y ejecucion
+⚡ ## Instalacion y ejecucion
 
 ### 1. Clona el repositorio
 
@@ -162,7 +162,7 @@ docker run --env-file .env -p 8080:8080 blackjackapp-backend
 
 ---
 
-## Endpoints principales
+🔗 ## Endpoints principales
 
 Algunos endpoints destacados (ver Swagger en `/swagger-ui.html`):
 
@@ -182,7 +182,7 @@ Todos los endpoints (excepto registro/login) requieren JWT Bearer en Authorizati
 
 ---
 
-## Seguridad y roles
+🔒 ## Seguridad y roles
 
 - JWT Bearer: Autenticacion y autorizacion en todos los endpoints protegidos.
 - Roles:
@@ -192,7 +192,7 @@ Todos los endpoints (excepto registro/login) requieren JWT Bearer en Authorizati
 
 ---
 
-## Testing
+✅ ## Testing
 
 El proyecto incluye tests unitarios para servicios, controladores y logica de juego con JUnit y Mockito. Puedes ejecutar todos los tests con:
 
@@ -202,17 +202,17 @@ mvn test
 
 ---
 
-## Despliegue Docker
+🐳 ## Despliegue Docker
 
 ---
 
-## Autor
+👤 ## Autor
 
 Jose (Jusep1983)
 
 ---
 
-## Prueba la app desplegada (Frontend)
+🚀 ## Prueba la app desplegada (Frontend)
 
 Puedes probar el juego BlackjackApp en produccion aqui:
 
@@ -225,5 +225,4 @@ Puedes probar el juego BlackjackApp en produccion aqui:
 > Nota: El frontend esta desarrollado en React y se encuentra en otro repositorio: [https://github.com/Jusep1983/S502-blackjack-app-frontend](https://github.com/Jusep1983/S502-blackjack-app-frontend)
 
 ---
-
 
