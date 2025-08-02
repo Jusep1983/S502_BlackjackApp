@@ -1,33 +1,3 @@
 spring:
   profiles:
     active: local
-#  application:
-#    name: blackjackapp
-#
-#  data:
-#    mongodb:
-#      database: blackjack_app_games
-#      uri: mongodb://localhost:27017
-#
-#  r2dbc:
-#    url: r2dbc:mysql://localhost:3306/blackjack_app_players
-#    username: root
-#    password: 1707
-#
-#  output:
-#    ansi:
-#      enabled: ALWAYS
-#
-#server:
-#  port: 8080
-#
-#jwt:
-#  secret: my-super-secret-key-123456
-#
-#
-## EJECUCIÓN EN LOCAL:
-#
-## swagger
-## http://localhost:8080/v3/api-docs
-## http://localhost:8080/swagger-ui/index.html#/
-#

@@ -4,13 +4,13 @@ spring:
 
   data:
     mongodb:
-      database: blackjack_app_games
-      uri: mongodb://localhost:27017
+      database: ${MONGODB_DATABASE}
+      uri: ${MONGODB_URI}
 
   r2dbc:
-    url: r2dbc:mysql://localhost:3306/blackjack_app_players
-    username: root
-    password: 1707
+    url: ${MYSQL_R2DBC_URL}
+    username: ${MYSQL_USER}
+    password: ${MYSQL_PASSWORD}
 
   output:
     ansi:
@@ -20,4 +20,11 @@ server:
   port: 8080
 
 jwt:
-  secret: my-super-secret-key-123456
+  secret: ${JWT_SECRET}
+
+## EJECUCIÓN EN LOCAL:
+#
+## swagger
+## http://localhost:8080/v3/api-docs
+## http://localhost:8080/swagger-ui/index.html#/
+#
