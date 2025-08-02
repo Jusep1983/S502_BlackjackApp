@@ -3,23 +3,24 @@
 API y aplicación web para jugar al Blackjack, con autenticación JWT, roles de usuario, gestión de jugadores, ranking y persistencia en MongoDB y MySQL.
 
 ## Tabla de Contenidos
-- [Descripcion](#descripcion)
-- [Configuracion de variables sensibles (JWT y Bases de Datos)](#configuracion-de-variables-sensibles-jwt-y-bases-de-datos)
-- [Caracteristicas principales](#caracteristicas-principales)
-- [Tecnologias](#tecnologias)
-- [Estructura real del repositorio](#estructura-real-del-repositorio)
-- [Instalacion y ejecucion](#instalacion-y-ejecucion)
-  - [1. Clona el repositorio](#1-clona-el-repositorio)
-  - [2. Configura tus variables de entorno](#2-configura-tus-variables-de-entorno)
-  - [3. Ejecuta la aplicacion (local)](#3-ejecuta-la-aplicacion-local)
-  - [4. Pruebas automaticas](#4-pruebas-automaticas)
-  - [5. Docker (opcional)](#5-docker-opcional)
-- [Endpoints principales](#endpoints-principales)
-- [Seguridad y roles](#seguridad-y-roles)
-- [Testing](#testing)
-- [Despliegue Docker](#despliegue-docker)
-- [Autor](#autor)
-- [Prueba la app desplegada (Frontend)](#prueba-la-app-desplegada-frontend)
+
+- 📝 [Descripcion](#descripcion)
+- 🔐 [Configuracion de variables sensibles (JWT y Bases de Datos)](#configuracion-de-variables-sensibles-jwt-y-bases-de-datos)
+- ✨ [Caracteristicas principales](#caracteristicas-principales)
+- 🛠️ [Tecnologias](#tecnologias)
+- 📂 [Estructura real del repositorio](#estructura-real-del-repositorio)
+- ⚡ [Instalacion y ejecucion](#instalacion-y-ejecucion)
+  - 📥 [1. Clona el repositorio](#1-clona-el-repositorio)
+  - ⚙️ [2. Configura tus variables de entorno](#2-configura-tus-variables-de-entorno)
+  - 🚀 [3. Ejecuta la aplicacion (local)](#3-ejecuta-la-aplicacion-local)
+  - 🧪 [4. Pruebas automaticas](#4-pruebas-automaticas)
+  - 🐳 [5. Docker (opcional)](#5-docker-opcional)
+- 🔗 [Endpoints principales](#endpoints-principales)
+- 🔒 [Seguridad y roles](#seguridad-y-roles)
+- ✅ [Testing](#testing)
+- 🐳 [Despliegue Docker](#despliegue-docker)
+- 👤 [Autor](#autor)
+- 🚀 [Prueba la app desplegada (Frontend)](#prueba-la-app-desplegada-frontend)
 
 
 ---
