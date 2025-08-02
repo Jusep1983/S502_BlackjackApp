@@ -21,6 +21,17 @@ API y aplicación web para jugar al Blackjack, con autenticación JWT, roles de 
 
 BlackjackApp es una API REST y web app para jugar partidas de Blackjack contra la banca, con registro/login, gestión y ranking de jugadores, panel de administración, y seguridad JWT. El backend está desarrollado con **Spring WebFlux** y persiste datos en **MongoDB** (partidas) y **MySQL** (jugadores). Incluye documentación Swagger/OpenAPI y pruebas automatizadas.
 
+## 🔐 Configuración de variables sensibles (JWT y Bases de Datos)
+
+Antes de ejecutar el backend, debes definir estas variables de entorno en tu máquina local editando en application-local.yml:
+```
+    JWT_SECRET=pon-tu-clave-secreta-aqui
+    MONGODB_URI=mongodb://localhost:27017
+    MONGODB_DATABASE=blackjack_app_games
+    MYSQL_R2DBC_URL=r2dbc:mysql://localhost:3306/blackjack_app_players
+    MYSQL_USER=user
+    MYSQL_PASSWORD=password
+```
 ---
 
 ## ✨ Características principales
