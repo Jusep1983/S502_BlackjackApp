@@ -1,4 +1,4 @@
-# BlackjackApp
+# ♠️ BlackjackApp ♣️
 
 API y aplicacion web para jugar al Blackjack, con autenticacion JWT, roles de usuario, gestion de jugadores, ranking y persistencia en MongoDB y MySQL.
 
