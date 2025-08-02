@@ -19,7 +19,6 @@ API y aplicación web para jugar al Blackjack, con autenticación JWT, roles de 
   * [✅ Testing](#--testing)
   * [🚀 Prueba la app desplegada (Frontend)](#---prueba-la-app-desplegada--frontend-)
 
-<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
 
 ---
 
