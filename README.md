@@ -4,16 +4,26 @@ API y aplicación web para jugar al Blackjack, con autenticación JWT, roles de 
 
 ## 📚 Tabla de Contenidos
 
-- [Descripción](#descripcin)
-- [Características principales](#caractersticas-principales)
-- [Tecnologías](#tecnologas)
-- [Estructura del proyecto](#estructura-del-proyecto)
-- [Instalación y ejecución](#instalacin-y-ejecucin)
-- [Endpoints principales](#endpoints-principales)
-- [Seguridad y roles](#seguridad-y-roles)
-- [Testing](#testing)
-- [Despliegue Docker](#despliegue-docker)
-- [Autor](#autor)
+- [♠️ BlackjackApp ♣️](#---blackjackapp---)
+  * [📚 Tabla de Contenidos](#---tabla-de-contenidos)
+  * [📝 Descripción](#---descripci-n)
+  * [🔐 Configuración de variables sensibles (JWT y Bases de Datos)](#---configuraci-n-de-variables-sensibles--jwt-y-bases-de-datos-)
+  * [✨ Características principales](#--caracter-sticas-principales)
+  * [🛠️ Tecnologías](#----tecnolog-as)
+  * [📂 Estructura real del repositorio](#---estructura-real-del-repositorio)
+  * [⚡ Instalación y ejecución](#--instalaci-n-y-ejecuci-n)
+    + [1. 📥 Clona el repositorio](#1----clona-el-repositorio)
+    + [2. ⚙️ Configura tus variables de entorno](#2----configura-tus-variables-de-entorno)
+    + [3. 🚀 Ejecuta la aplicación (local)](#3----ejecuta-la-aplicaci-n--local-)
+    + [4. 🧪 Pruebas automáticas](#4----pruebas-autom-ticas)
+    + [5. 🐳 Docker (opcional)](#5----docker--opcional-)
+  * [🔗 Endpoints principales](#---endpoints-principales)
+  * [🔒 Seguridad y roles](#---seguridad-y-roles)
+  * [✅ Testing](#--testing)
+  * [🚀 Prueba la app desplegada (Frontend)](#---prueba-la-app-desplegada--frontend-)
+
+<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
+
 ---
 
 ## 📝 Descripción
