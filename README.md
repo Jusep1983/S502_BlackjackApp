@@ -4,17 +4,16 @@ API y aplicación web para jugar al Blackjack, con autenticación JWT, roles de 
 
 ## 📚 Tabla de Contenidos
 
-- [📝 Descripción](#descripción)
-- [✨ Características principales](#características-principales)
-- [🛠️ Tecnologías](#tecnologías)
-- [📂 Estructura del proyecto](#estructura-del-proyecto)
-- [⚡ Instalación y ejecución](#instalación-y-ejecución)
-- [🔗 Endpoints principales](#endpoints-principales)
-- [🔒 Seguridad y roles](#seguridad-y-roles)
-- [✅ Testing](#testing)
-- [🐳 Despliegue Docker](#despliegue-docker)
-- [👤 Autor](#autor)
-
+- [Descripción](#descripcin)
+- [Características principales](#caractersticas-principales)
+- [Tecnologías](#tecnologas)
+- [Estructura del proyecto](#estructura-del-proyecto)
+- [Instalación y ejecución](#instalacin-y-ejecucin)
+- [Endpoints principales](#endpoints-principales)
+- [Seguridad y roles](#seguridad-y-roles)
+- [Testing](#testing)
+- [Despliegue Docker](#despliegue-docker)
+- [Autor](#autor)
 ---
 
 ## 📝 Descripción
