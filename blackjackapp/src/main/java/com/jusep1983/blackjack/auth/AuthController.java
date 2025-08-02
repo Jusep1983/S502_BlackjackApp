@@ -41,33 +41,42 @@ public class AuthController {
     @PostMapping("/register")
     public Mono<ResponseEntity<MyApiResponse<AuthResponse>>> register(@Valid @RequestBody AuthRequest request) {
         return playerRepository.findByUserName(request.getUserName())
-                .flatMap(existing -> {
+                .flatMap(existingUser -> {
                     log.warn("Registration attempt failed: username '{}' already exists", request.getUserName());
                     return Mono.just(ResponseEntity
                             .status(HttpStatus.CONFLICT)
                             .body(new MyApiResponse<AuthResponse>(HttpStatus.CONFLICT.value(), "Username already exists", null)));
                 })
                 .switchIfEmpty(
-                        Mono.defer(() -> {
-                            Player newPlayer = new Player();
-                            newPlayer.setUserName(request.getUserName());
-                            newPlayer.setAlias(request.getUserName());
-                            newPlayer.setPassword(passwordEncoder.encode(request.getPassword()));
-                            newPlayer.setRole(Role.USER);
-                            newPlayer.setCreatedAt(LocalDateTime.now());
+                        playerRepository.findByAlias(request.getUserName())
+                                .flatMap(existingAlias -> {
+                                    log.warn("Registration attempt failed: alias '{}' already exists", request.getUserName());
+                                    return Mono.just(ResponseEntity
+                                            .status(HttpStatus.CONFLICT)
+                                            .body(new MyApiResponse<AuthResponse>(HttpStatus.CONFLICT.value(), "Alias already exists", null)));
+                                })
+                                .switchIfEmpty(
+                                        Mono.defer(() -> {
+                                            Player newPlayer = new Player();
+                                            newPlayer.setUserName(request.getUserName());
+                                            newPlayer.setAlias(request.getUserName());
+                                            newPlayer.setPassword(passwordEncoder.encode(request.getPassword()));
+                                            newPlayer.setRole(Role.USER);
+                                            newPlayer.setCreatedAt(LocalDateTime.now());
 
-                            log.info("Registering new player '{}'", newPlayer.getUserName());
+                                            log.info("Registering new player '{}'", newPlayer.getUserName());
 
-                            return playerRepository.save(newPlayer)
-                                    .map(saved -> {
-                                        String token = authService.generateToken(
-                                                saved.getUserName(), saved.getRole()
-                                        );
-                                        log.info("Player '{}' registered successfully", saved.getUserName());
-                                        return ResponseEntity.status(HttpStatus.CREATED)
-                                                .body(new MyApiResponse<>(HttpStatus.CREATED.value(), "Player created successfully", new AuthResponse(token)));
-                                    });
-                        })
+                                            return playerRepository.save(newPlayer)
+                                                    .map(saved -> {
+                                                        String token = authService.generateToken(
+                                                                saved.getUserName(), saved.getRole()
+                                                        );
+                                                        log.info("Player '{}' registered successfully", saved.getUserName());
+                                                        return ResponseEntity.status(HttpStatus.CREATED)
+                                                                .body(new MyApiResponse<>(HttpStatus.CREATED.value(), "Player created successfully", new AuthResponse(token)));
+                                                    });
+                                        })
+                                )
                 );
     }
 

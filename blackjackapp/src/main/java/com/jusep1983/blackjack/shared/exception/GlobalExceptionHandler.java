@@ -98,6 +98,12 @@ public class GlobalExceptionHandler {
         return response(HttpStatus.FORBIDDEN, ex.getMessage(), request);
     }
 
+    @ExceptionHandler(DuplicateKeyException.class)
+    public Mono<ResponseEntity<MyApiResponse<ErrorResponse>>> handleDuplicateKey(DuplicateKeyException ex, ServerHttpRequest request) {
+        log.error("Duplicate key error: {}", ex.getMessage(), ex);
+        return response(HttpStatus.CONFLICT, "Alias or username already exists: ", request);
+    }
+
     @ExceptionHandler(Exception.class)
     public Mono<ResponseEntity<MyApiResponse<ErrorResponse>>> handleGeneral(Exception ex, ServerHttpRequest request) {
         log.error("Unexpected error: {}", ex.getMessage(), ex);
