@@ -14,7 +14,7 @@ API y aplicación web para jugar al Blackjack, con autenticación JWT, roles de 
   - ⚙️ [2. Configura tus variables de entorno](#2-configura-tus-variables-de-entorno)
   - 🚀 [3. Ejecuta la aplicacion (local)](#3-ejecuta-la-aplicacion-local)
   - 🧪 [4. Pruebas automaticas](#4-pruebas-automaticas)
-  - 🐳 [5. Docker (opcional)](#5-docker-opcional)
+  -  [5. 🐳 Docker (opcional)](#5-docker-opcional)
 - 🔗 [Endpoints principales](#endpoints-principales)
 - 🔒 [Seguridad y roles](#seguridad-y-roles)
 - ✅ [Testing](#testing)
